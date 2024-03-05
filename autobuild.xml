@@ -1426,11 +1426,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>99e96926b7cf668d8e8195a021d6eacb09de32a0</string>
+              <string>f5e5be3af96f1eb0842219a94765c04aa9c561c5</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-icu4c/releases/download/v4.8.1-7d08d82/icu4c-4.8.1-linux64-7d08d82.tar.zst</string>
+              <string>https://3p.firestormviewer.org/icu4c-4.8.1-linux64-240621048.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
