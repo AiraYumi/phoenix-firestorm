@@ -992,9 +992,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>39702f98867a319b090ee04f22d82762</string>
+              <string>4cd82e2dec06ddff19e9b3dc0254f2593ec80452</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/expat-2.5.0.230021327-linux64-230021327.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-expat/releases/download/v2.1.1.1f36d02/expat-2.1.1.1f36d02-linux64-1f36d02.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1531,6 +1533,8 @@
             <map>
               <key>hash</key>
               <string>b4b2278bd2fcae85619e2145a243cca388d760d7</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
               <string>https://github.com/secondlife/3p-jpeglib/releases/download/v8c.7846234/jpeglib-8c.7846234-linux64-7846234.tar.zst</string>
             </map>
@@ -1808,11 +1812,9 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>e646a9da0ddfe1dfbffc6600d7d35f78ac48c75e</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
+              <string>13de93ea11544051b69f238eeb644fd3</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/libpng-1.6.38-240620624-linux64-240620624.tar.zst</string>
+              <string>http://automated-builds-secondlife-com.s3.amazonaws.com/ct2/882/1946/libpng-1.6.8.500873-linux64-500873.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
