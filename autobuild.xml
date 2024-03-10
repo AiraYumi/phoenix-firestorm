@@ -431,6 +431,20 @@
             <key>name</key>
             <string>darwin64</string>
           </map>
+          <key>linux64</key>
+          <map>
+            <key>archive</key>
+            <map>
+              <key>hash</key>
+              <string>0cac6af362861d90cdd3dc4adfff95f54e619f4a</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
+              <key>url</key>
+              <string>https://github.com/secondlife/3p-tracy/releases/download/v0.8.1%2Br1/tracy-v0.8.1.38bf5f3-linux64-38bf5f3.tar.zst</string>
+            </map>
+            <key>name</key>
+            <string>linux64</string>
+          </map>
           <key>windows64</key>
           <map>
             <key>archive</key>
@@ -488,9 +502,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>1c341bdbb5fd0c8a8930f76e6c1647d4</string>
+              <string>95137cd3f4d6ffa5bd7a00d7d91bd8fc272b7ca2</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/apr_suite-1.4.5.230921251-linux64-230921251.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-apr_suite/releases/download/v1.7.2-c5f3347/apr_suite-1.7.2-c5f3347-linux64-c5f3347.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -546,11 +562,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>5d1952e270a873d4587f7b943ed6e3f87d5023da</string>
+              <string>a3bfbdba7e1977e7e65266ec654990bb13994bd3</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/boost-1.81-linux64-240621158.tar.zst</string>
+              <string>https://github.com/secondlife/3p-boost/releases/download/v1.81-3d0d7fc/boost-1.81-linux64-3d0d7fc.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -652,11 +668,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>83f9c9aff5a7b96711c04bd33cb453c108dee3a5</string>
+              <string>cab0237b5194254c0c0ff6bf77bc6a2f946d4f57</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/colladadom-2.3.240621210-linux64-240621210.tar.zst</string>
+              <string>https://github.com/secondlife/3p-colladadom/releases/download/v2.3-2f532e1/colladadom-2.3.2f532e1-linux64-2f532e1.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -814,9 +830,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>2d59bb6f4bd38a18d9250ff010a13b59</string>
+              <string>e03eb77224290c875ff84f75b7fe3d0e7c162c94</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/dictionaries-2.46203-common-46203.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-dictionaries/releases/download/v1-a01bb6c/dictionaries-1.a01bb6c-common-a01bb6c.tar.zst</string>
             </map>
             <key>name</key>
             <string>common</string>
@@ -914,11 +932,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>c036cc042523fb6a3dafb7134f83e52c566c0765</string>
+              <string>5b957aa7f353b10ae17b7119e5b3668f48a35325</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/emoji_shortcodes-6.1.0.240620448-linux64-240620448.tar.zst</string>
+              <string>https://github.com/secondlife/3p-emoji-shortcodes/releases/download/v6.1.0.5413f58/emoji_shortcodes-6.1.0.5413f58-linux64-5413f58.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -974,9 +992,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>39702f98867a319b090ee04f22d82762</string>
+              <string>4cd82e2dec06ddff19e9b3dc0254f2593ec80452</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/expat-2.5.0.230021327-linux64-230021327.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-expat/releases/download/v2.1.1.1f36d02/expat-2.1.1.1f36d02-linux64-1f36d02.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1032,11 +1052,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>bbb978f21e690599aedcd44658dceeaf</string>
+              <string>7fbf32c0ecb2c8019ec48ecadf949993</string>
               <key>hash_algorithm</key>
               <string>md5</string>
               <key>url</key>
-              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240390132.tar.bz2</string>
+              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240070233.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1168,11 +1188,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>7cc58b3acb230a7e65ea5f0ff800be393eb4aa1b</string>
+              <string>34af0a90a3015b7e7ec2486090bc4ce6ee5be758</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-glext/releases/download/v69/glext-68-common-685b36e.tar.zst</string>
+              <string>https://github.com/secondlife/3p-glext/releases/download/v68-af397ee/glext-68-common-af397ee.tar.zst</string>
             </map>
             <key>name</key>
             <string>common</string>
@@ -1200,11 +1220,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>6604c1cca515d287e697997a8d5593d1cae172a9</string>
+              <string>066625e7aa7f697a4b6cd461aad960c57181011f</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-glh_linear/releases/download/v1.0.1-dev2.g3253ed7-3253ed7/glh_linear-common-None.tar.zst</string>
+              <string>https://github.com/secondlife/3p-glh_linear/releases/download/v1.0.1-dev4-984c397/glh_linear-1.0.1-dev4-common-984c397.tar.zst</string>
             </map>
             <key>name</key>
             <string>common</string>
@@ -1512,9 +1532,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>324bb9deb00d256a12f8cbf686f413f0</string>
+              <string>b4b2278bd2fcae85619e2145a243cca388d760d7</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/jpeglib-8c.180841548-linux64-180841548.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-jpeglib/releases/download/v8c.7846234/jpeglib-8c.7846234-linux64-7846234.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1570,9 +1592,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>352ab340f2091c93eb313cf80ac0c8cc</string>
+              <string>66dce1d0c2fc19dff13db279d973773fc7e2aa13</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/jsoncpp-0.5.0.202052209-linux64-202052209.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-jsoncpp/releases/download/v0.5.0-cc63e92/jsoncpp-0.5.0.cc63e92-linux64-cc63e92.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1682,9 +1706,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>6555f040c686d8c1dec8e6264c2d3672</string>
+              <string>6413d3bd4cd50c2a6b7f949eb4bd6f0c94feb984</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/libhunspell-1.3.2.180841552-linux64-180841552.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-libhunspell/releases/download/v1.3.2.650fb94/libhunspell-1.3.2.650fb94-linux64-650fb94.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1786,11 +1812,9 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>e646a9da0ddfe1dfbffc6600d7d35f78ac48c75e</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
+              <string>13de93ea11544051b69f238eeb644fd3</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/libpng-1.6.38-240620624-linux64-240620624.tar.zst</string>
+              <string>http://automated-builds-secondlife-com.s3.amazonaws.com/ct2/882/1946/libpng-1.6.8.500873-linux64-500873.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1952,11 +1976,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>e50ea94bbaa4ff41bf53b84b7192df1a694c5337</string>
+              <string>a9503e1b4e1d9790cf29d18a3d9ab39e6a515679</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/llca/releases/download/v202310121525.0-d22bd98/llca-202310121530.0-common-d22bd98.tar.zst</string>
+              <string>https://github.com/secondlife/llca/releases/download/v202402012004.0-0f5d9c3/llca-202402012004.0-common-0f5d9c3.tar.zst</string>
             </map>
             <key>name</key>
             <string>common</string>
@@ -2191,9 +2215,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>50d647afc4e510af72f09dcd7a77e920</string>
+              <string>6f4509dca9e32e3b4f9c4b13d875ce0e24340efc</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/meshoptimizer-0.16.222121104-linux64-222121104.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-meshoptimizer/releases/download/v160-4f905dd/meshoptimizer-160-linux64-4f905dd.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2249,9 +2275,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>5b719b8d3602f8dc9401cc92d606b34e</string>
+              <string>edc9782bf209e17ad1845498b42f16d733582082</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/mikktspace-1-linux64-223421209.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-mikktspace/releases/download/v1-5cee1f4/mikktspace-1-linux64-5cee1f4.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2532,9 +2560,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>03b7df0406d7588c4fb49c2ddf0d8264</string>
+              <string>90052be851c4fcecc35d8424b4f31352de14ab2f</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/ogg_vorbis-1.3.3-1.3.6.202241500-linux64-202241500.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-ogg_vorbis/releases/download/v1.3.3-1.3.6-881f65e/ogg_vorbis-1.3.3-1.3.6.881f65e-linux64-881f65e.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2608,9 +2638,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>4f36ae378593240701fd4453bd6074c8</string>
+              <string>e0fbc4874acc4167a6e2b6489fbb8258d98fd665</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/openal-1.12.854-1.1.0.180841552-linux64-180841552.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-openal-soft/releases/download/v1.23.1-18e315c/openal-1.23.1-linux64-18e315c.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2680,9 +2712,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>b1dad7c841118a3b6e03a01722d1846a</string>
+              <string>8c277dde6076fb682cb07264dd70f6f2298b633f</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/openjpeg-2.5.0.230362345-linux64-230362345.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-openjpeg/releases/download/v2.5.0.ea12248/openjpeg-2.5.0.ea12248-linux64-ea12248.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2954,9 +2988,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>4dad1c0948141e1667c01a3ee755e4dc</string>
+              <string>2c47ae2d0c38c86b8c2db8d9317f0ab15edfc74f</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://automated-builds-secondlife-com.s3.amazonaws.com/ct2/105849/926137/tinygltf-v2.5.0-common-575729.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-tinygltf/releases/download/v2.5.0-1ae57fd/tinygltf-v2.5.0-common-1ae57fd.tar.zst</string>
             </map>
             <key>name</key>
             <string>common</string>
@@ -3036,9 +3072,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>0d6832fd958ec127f089e683c9b67169</string>
+              <string>df66574b3d70f49570709eccd8a1cdeee996cb43</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/uriparser-0.9.4-linux64-211210958.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-uriparser/releases/download/v0.9.4-42d7a6d/uriparser-0.9.4-linux64-42d7a6d.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -3094,11 +3132,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>f4677b0ebd9880f29c118af51ada50883dd0a1e4</string>
+              <string>42a5050b890c503ae4d0b3442ba67f8d2b88feff</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/viewer-manager/releases/download/v3.0-08bf5ee/viewer_manager-3.0-08bf5ee-linux64-08bf5ee.tar.zst</string>
+              <string>https://github.com/secondlife/viewer-manager/releases/download/v3.0-2c4be99/viewer_manager-3.0-2c4be99-linux64-2c4be99.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -3202,11 +3240,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>71a9c7c03a2c26cdb21fa476de485d9c</string>
+              <string>ad0c8b41ee4b4de216382bec46ee1c25962a3f12</string>
               <key>hash_algorithm</key>
-              <string>md5</string>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/xmlrpc_epi-0.54.2.230940042-linux64-230940042.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-xmlrpc-epi/releases/download/v0.54.1.8a05acf/xmlrpc_epi-0.54.1.8a05acf-linux64-8a05acf.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -3243,41 +3281,19 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
       <map>
         <key>platforms</key>
         <map>
-          <key>darwin64</key>
+          <key>common</key>
           <map>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>8cff2060843db3db788511ee34a8e8cc</string>
+              <string>8e365eff8dcace48d91e2530f8b13e420849aefc</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://automated-builds-secondlife-com.s3.amazonaws.com/ct2/101316/891509/vulkan_gltf-1-darwin64-572743.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-vulkan-gltf-pbr/releases/download/v1.0.0-d7c372f/vulkan_gltf-1.0.0-common-d7c372f.tar.zst</string>
             </map>
             <key>name</key>
-            <string>darwin64</string>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>58eea384be49ba756ce9c5e66669540b</string>
-              <key>url</key>
-              <string>https://automated-builds-secondlife-com.s3.amazonaws.com/ct2/101318/891520/vulkan_gltf-1-windows-572743.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>windows</string>
-          </map>
-          <key>windows64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>79b6a11622c2f83cfc2b7cd1fafb867b</string>
-              <key>url</key>
-              <string>https://automated-builds-secondlife-com.s3.amazonaws.com/ct2/101319/891521/vulkan_gltf-1-windows64-572743.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>windows64</string>
+            <string>common</string>
           </map>
         </map>
         <key>license</key>
