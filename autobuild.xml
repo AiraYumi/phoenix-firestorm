@@ -438,9 +438,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>1c341bdbb5fd0c8a8930f76e6c1647d4</string>
+              <string>95137cd3f4d6ffa5bd7a00d7d91bd8fc272b7ca2</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/apr_suite-1.4.5.230921251-linux64-230921251.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-apr_suite/releases/download/v1.7.2-c5f3347/apr_suite-1.7.2-c5f3347-linux64-c5f3347.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -926,9 +928,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>39702f98867a319b090ee04f22d82762</string>
+              <string>4cd82e2dec06ddff19e9b3dc0254f2593ec80452</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/expat-2.5.0.230021327-linux64-230021327.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-expat/releases/download/v2.1.1.1f36d02/expat-2.1.1.1f36d02-linux64-1f36d02.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1084,11 +1088,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>a8326f592bf608095f0854383eec2baf36257ea9</string>
+              <string>061e1bd8eef85a5d15fafc9d46fc562a621207da</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/freetype-2.12.1.240700637-linux64-240700637.tar.zst</string>
+              <string>https://github.com/secondlife/3p-freetype/releases/download/v2.12.1.d315c1b/freetype-2.12.1.8443253711-linux64-8443253711.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1738,11 +1742,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>e646a9da0ddfe1dfbffc6600d7d35f78ac48c75e</string>
+              <string>39d5779fd79e23da16a7b5bf608008999004c828</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/libpng-1.6.38-240620624-linux64-240620624.tar.zst</string>
+              <string>https://github.com/secondlife/3p-libpng/releases/download/v1.16.38-d427738/libpng-1.6.38-8318603154-linux64-8318603154.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -3246,11 +3250,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>71a9c7c03a2c26cdb21fa476de485d9c</string>
+              <string>ad0c8b41ee4b4de216382bec46ee1c25962a3f12</string>
               <key>hash_algorithm</key>
-              <string>md5</string>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/xmlrpc_epi-0.54.2.230940042-linux64-230940042.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-xmlrpc-epi/releases/download/v0.54.1.8a05acf/xmlrpc_epi-0.54.1.8a05acf-linux64-8a05acf.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
