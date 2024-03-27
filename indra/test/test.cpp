@@ -53,22 +53,6 @@
 #	include "ctype_workaround.h"
 #endif
 
-// <FS:ND> Google Mock/Test is not used an either Windows/Mac/Linux
-#if 0
-
-#ifndef LL_WINDOWS
-
-typedef struct {
-  void *re_pcre;
-  size_t re_nsub;
-  size_t re_erroffset;
-} regex_t;
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#endif
-
-#endif
-// </FS:ND>
 #if LL_MSVC
 #pragma warning (push)
 #pragma warning (disable : 4702) // warning C4702: unreachable code
