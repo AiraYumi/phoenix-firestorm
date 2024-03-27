@@ -988,11 +988,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>bbb978f21e690599aedcd44658dceeaf</string>
+              <string>7fbf32c0ecb2c8019ec48ecadf949993</string>
               <key>hash_algorithm</key>
               <string>md5</string>
               <key>url</key>
-              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240390132.tar.bz2</string>
+              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240070233.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
