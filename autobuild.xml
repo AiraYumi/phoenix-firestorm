@@ -498,11 +498,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>a3bfbdba7e1977e7e65266ec654990bb13994bd3</string>
+              <string>06b7c1e79b5185c40fd87fc7929c56068aa6b101</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-boost/releases/download/v1.81-3d0d7fc/boost-1.81-linux64-3d0d7fc.tar.zst</string>
+              <string>https://github.com/secondlife/3p-boost-new/releases/download/v1.84.0-r4/boost-1.84-linux64-8415288523.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -604,11 +604,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>cab0237b5194254c0c0ff6bf77bc6a2f946d4f57</string>
+              <string>e3aded3df2ae8e171b9d34db558e3db9ec1c4ee3</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-colladadom/releases/download/v2.3-2f532e1/colladadom-2.3.2f532e1-linux64-2f532e1.tar.zst</string>
+              <string>file:///opt/firestorm/colladadom-2.3.240880518-linux64-240880518.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
