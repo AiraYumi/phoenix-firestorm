@@ -32,6 +32,11 @@
 
 #include "llsingleton.h"
 
+namespace Json
+{
+    class Value;
+}
+
 class LLTranslationAPIHandler;
 /**
  * Entry point for machine translation services.

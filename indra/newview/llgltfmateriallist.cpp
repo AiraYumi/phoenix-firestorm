@@ -47,6 +47,9 @@
 #include "tinygltf/tiny_gltf.h"
 #include <strstream>
 
+#include "json/reader.h"
+#include "json/value.h"
+
 #include <unordered_set>
 
 LLGLTFMaterialList gGLTFMaterialList;
