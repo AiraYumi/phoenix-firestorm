@@ -385,36 +385,6 @@
           </map>
         </map>
       </map>
-      <key>SDL</key>
-      <map>
-        <key>platforms</key>
-        <map>
-          <key>linux64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>64c1dff0e19792acec7fd32556bf4d7b</string>
-              <key>url</key>
-              <string>https://3p.firestormviewer.org/SDL-1.2.15-linux64-181411635.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>linux64</string>
-          </map>
-        </map>
-        <key>license</key>
-        <string>lgpl</string>
-        <key>license_file</key>
-        <string>LICENSES/SDL.txt</string>
-        <key>copyright</key>
-        <string>Copyright (C) 1997-2012 Sam Lantinga</string>
-        <key>version</key>
-        <string>1.2.15</string>
-        <key>name</key>
-        <string>SDL</string>
-        <key>description</key>
-        <string>Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.</string>
-      </map>
       <key>apr_suite</key>
       <map>
         <key>platforms</key>
@@ -1024,36 +994,6 @@
         <string>fmodstudio</string>
         <key>description</key>
         <string>FMOD Studio API</string>
-      </map>
-      <key>fontconfig</key>
-      <map>
-        <key>platforms</key>
-        <map>
-          <key>linux64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>6fdcfcc9aa1d01164c0f7ca5590859bb</string>
-              <key>url</key>
-              <string>https://3p.firestormviewer.org/fontconfig-2.12.6-linux64-223020909.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>linux64</string>
-          </map>
-        </map>
-        <key>license</key>
-        <string>bsd</string>
-        <key>license_file</key>
-        <string>LICENSES/fontconfig.txt</string>
-        <key>copyright</key>
-        <string>Copyright (C) 2000,2001,2002,2003,2004,2006,2007 Keith Packard, 2005 Patrick Lam, 2009 Roozbeh Pournader, 2008,2009 Red Hat, Inc., 2008 Danilo Šegan, 2012 Google, Inc.</string>
-        <key>version</key>
-        <string>2.11.0</string>
-        <key>name</key>
-        <string>fontconfig</string>
-        <key>description</key>
-        <string>Fontconfig is a library for configuring and customizing font access.</string>
       </map>
       <key>freetype</key>
       <map>
