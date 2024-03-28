@@ -958,11 +958,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>bbb978f21e690599aedcd44658dceeaf</string>
+              <string>7fbf32c0ecb2c8019ec48ecadf949993</string>
               <key>hash_algorithm</key>
               <string>md5</string>
               <key>url</key>
-              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240390132.tar.bz2</string>
+              <string>file:///opt/firestorm/fmodstudio-2.02.20-linux64-240070233.tar.bz2</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1119,64 +1119,6 @@
         <key>description</key>
         <string>glh - is a platform-indepenedent C++ OpenGL helper library</string>
       </map>
-      <key>googlemock</key>
-      <map>
-        <key>platforms</key>
-        <map>
-          <key>darwin64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>dce3174b12136746f5f910e311e895c1b47bf8fb</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
-              <key>url</key>
-              <string>https://github.com/secondlife/3p-googlemock/releases/download/v1.7.0.2b109d4/googlemock-1.7.0.2b109d4-darwin64-2b109d4.tar.zst</string>
-            </map>
-            <key>name</key>
-            <string>darwin64</string>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>ff459b58695c76838782847a0b792104</string>
-              <key>url</key>
-              <string>https://automated-builds-secondlife-com.s3.amazonaws.com/ct2/9697/45717/googlemock-1.7.0.509686-linux64-509686.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>linux64</string>
-          </map>
-          <key>windows64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>265813f84b04c3b03f3d7d33e149b3d5e3cf31db</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
-              <key>url</key>
-              <string>https://github.com/secondlife/3p-googlemock/releases/download/v1.7.0.2b109d4/googlemock-1.7.0.2b109d4-windows64-2b109d4.tar.zst</string>
-            </map>
-            <key>name</key>
-            <string>windows64</string>
-          </map>
-        </map>
-        <key>license</key>
-        <string>BSD</string>
-        <key>license_file</key>
-        <string>LICENSES/gmock.txt</string>
-        <key>copyright</key>
-        <string>Copyright 2008, Google Inc.</string>
-        <key>version</key>
-        <string>1.7.0.2b109d4</string>
-        <key>name</key>
-        <string>googlemock</string>
-        <key>description</key>
-        <string>a library for writing and using C++ mock classes</string>
-      </map>
       <key>gstreamer</key>
       <map>
         <key>platforms</key>
@@ -1296,8 +1238,7 @@
             </map>
             <key>name</key>
             <string>darwin64</string>
-          </map>
-          <key>linux64</key>
+          </map>          <key>linux64</key>
           <map>
             <key>archive</key>
             <map>
@@ -2789,21 +2730,7 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
       <map>
         <key>platforms</key>
         <map>
-          <key>darwin64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>cfed00d8ea7265c035c2d86a234b28efb0b23756</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
-              <key>url</key>
-              <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-b8f6746/threejs-0.132.2-darwin64-b8f6746.tar.zst</string>
-            </map>
-            <key>name</key>
-            <string>darwin64</string>
-          </map>
-          <key>linux64</key>
+          <key>common</key>
           <map>
             <key>archive</key>
             <map>
@@ -2815,21 +2742,7 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
               <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-5da28d9/threejs-0.132.2-common-8454371083.tar.zst</string>
             </map>
             <key>name</key>
-            <string>linux64</string>
-          </map>
-          <key>windows64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>4141710fccbd1ea2b3b53d00e189bdfa2ee9d441</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
-              <key>url</key>
-              <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-b8f6746/threejs-0.132.2-windows64-b8f6746.tar.zst</string>
-            </map>
-            <key>name</key>
-            <string>windows64</string>
+            <string>common</string>
           </map>
         </map>
         <key>license</key>
@@ -2912,6 +2825,20 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             </map>
             <key>name</key>
             <string>windows64</string>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>archive</key>
+            <map>
+              <key>hash</key>
+              <string>0cac6af362861d90cdd3dc4adfff95f54e619f4a</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
+              <key>url</key>
+              <string>https://github.com/secondlife/3p-tracy/releases/download/v0.8.1%2Br1/tracy-v0.8.1.38bf5f3-linux64-38bf5f3.tar.zst</string>
+            </map>
+            <key>name</key>
+            <string>linux64</string>
           </map>
         </map>
         <key>license</key>
@@ -3102,11 +3029,11 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>f4677b0ebd9880f29c118af51ada50883dd0a1e4</string>
+              <string>42a5050b890c503ae4d0b3442ba67f8d2b88feff</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/viewer-manager/releases/download/v3.0-08bf5ee/viewer_manager-3.0-08bf5ee-linux64-08bf5ee.tar.zst</string>
+              <string>https://github.com/secondlife/viewer-manager/releases/download/v3.0-2c4be99/viewer_manager-3.0-2c4be99-linux64-2c4be99.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -4027,6 +3954,28 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
               </map>
               <key>name</key>
               <string>ReleaseFS_open</string>
+            </map>
+            <key>ReleaseFS_custom</key>
+            <map>
+              <key>build</key>
+              <map>
+                <key>options</key>
+                <array>
+                  <string>--build</string>
+                  <string>--platform linux</string>
+                  <string>--package</string>
+                </array>
+              </map>
+              <key>configure</key>
+              <map>
+                <key>options</key>
+                <array>
+                  <string>--platform linux</string>
+                  <string>--package</string>
+                </array>
+              </map>
+              <key>name</key>
+              <string>ReleaseFS_custom</string>
             </map>
           </map>
           <key>build_directory</key>
