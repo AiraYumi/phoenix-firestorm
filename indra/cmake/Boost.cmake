@@ -35,7 +35,8 @@ elseif (LINUX)
           boost_program_options-mt${addrsfx}
           boost_regex-mt${addrsfx}
           boost_system-mt${addrsfx}
-          boost_thread-mt${addrsfx})
+          boost_thread-mt${addrsfx}
+          boost_wave-mt${addrsfx})
 elseif (DARWIN)
   target_link_libraries( ll::boost INTERFACE
           boost_context-mt${addrsfx}
