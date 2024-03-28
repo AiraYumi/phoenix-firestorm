@@ -662,11 +662,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>64210ab1d7c881dbe5c78ef8f6db5a6d2b27e5d2</string>
+              <string>aea0bed0f953a9371b9091f09230b41597f891f7</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/cubemaptoequirectangular-1.1.0-linux64-213500938.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-cubemap_to_eqr_js/releases/download/v1.1.0-cb8785a/cubemaptoequirectangular-1.1.0-linux64-cb8785a.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -1353,9 +1353,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>fd8060aa3c920e0fc63e7ecbea67bc5e</string>
+              <string>23daab838f4b8f92e5dc1a2f6c568cb7b0cb43b7</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/jpegencoderbasic-1.0-linux64-213500937.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-jpeg_encoder_js/releases/download/v1.0-790015a/jpegencoderbasic-1.0-linux64-790015a.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
@@ -2788,45 +2790,19 @@ Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors</string>
       <map>
         <key>platforms</key>
         <map>
-          <key>darwin64</key>
+          <key>common</key>
           <map>
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>cfed00d8ea7265c035c2d86a234b28efb0b23756</string>
+              <string>982c0fa427458082ea9e3cb9603904210732b64e</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-b8f6746/threejs-0.132.2-darwin64-b8f6746.tar.zst</string>
+              <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-5da28d9/threejs-0.132.2-common-8454371083.tar.zst</string>
             </map>
             <key>name</key>
-            <string>darwin64</string>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>d37be064bd851276dab423d723cb9b7d</string>
-              <key>url</key>
-              <string>https://3p.firestormviewer.org/threejs-0.132.2-linux64-213500940.tar.bz2</string>
-            </map>
-            <key>name</key>
-            <string>linux64</string>
-          </map>
-          <key>windows64</key>
-          <map>
-            <key>archive</key>
-            <map>
-              <key>hash</key>
-              <string>4141710fccbd1ea2b3b53d00e189bdfa2ee9d441</string>
-              <key>hash_algorithm</key>
-              <string>sha1</string>
-              <key>url</key>
-              <string>https://github.com/secondlife/3p-three_js/releases/download/v0.132.2-b8f6746/threejs-0.132.2-windows64-b8f6746.tar.zst</string>
-            </map>
-            <key>name</key>
-            <string>windows64</string>
+            <string>common</string>
           </map>
         </map>
         <key>license</key>
