@@ -142,9 +142,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>81fe1e927e4fe3c5e5f15ce6219ca883</string>
+              <string>691fef2ddd57d7b6c26e87fc82d9ace3f54e078c</string>
+              <key>hash_algorithm</key>
+              <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/fltk-1.3.5.202282121-linux64-202282121.tar.bz2</string>
+              <string>https://github.com/secondlife/3p-fltk/releases/download/v1.3.9-r1/fltk-1.3.9.8556992788-linux64-8556992788.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux</string>
@@ -1151,7 +1153,7 @@
       <map>
         <key>platforms</key>
         <map>
-          <key>darwin64</key>
+          <key>darwin64</ke
           <map>
             <key>archive</key>
             <map>
@@ -1243,11 +1245,11 @@
             <key>archive</key>
             <map>
               <key>hash</key>
-              <string>f5e5be3af96f1eb0842219a94765c04aa9c561c5</string>
+              <string>bdd74e2a02c7b78fded9222140d197da4af9904e</string>
               <key>hash_algorithm</key>
               <string>sha1</string>
               <key>url</key>
-              <string>https://3p.firestormviewer.org/icu4c-4.8.1-linux64-240621048.tar.zst</string>
+              <string>https://github.com/secondlife/3p-icu4c/releases/download/v4.8.1-8bff176/icu4c-4.8.1-linux64-8512575562.tar.zst</string>
             </map>
             <key>name</key>
             <string>linux64</string>
