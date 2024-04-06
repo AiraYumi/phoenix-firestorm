@@ -43,5 +43,5 @@ jobs:
         id: build
         shell: bash
         run: |
-          autobuild configure -A 64 -c ReleaseFS_open -- --no-opensim --avx2 --tracy --ninja --vscode
+          autobuild configure -A 64 -c ReleaseFS_open -- --no-opensim --avx2 --ninja --vscode
           cd build-linux-x86_64 && ninja -k0
