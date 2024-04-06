@@ -41,7 +41,6 @@
 
 // <FS:Beq> Additional logging options. These can skew inworld numbers so onyl use for debugging and tracking issues
 #ifdef TRACY_ENABLE
-#include "Tracy.hpp"
 // USAGE_TRACKING - displays overlapping stats that may imply double counting.
 // ATTACHMENT_TRACKING - displays detailed tracking info for Avatar and Attachment. very heavy overhead.
 // #define USAGE_TRACKING
