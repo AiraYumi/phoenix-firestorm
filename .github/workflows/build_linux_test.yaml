@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup python
         uses: actions/setup-python@v5
@@ -24,12 +22,6 @@ jobs:
         with:
           repository: FirestormViewer/fs-build-variables
           path: .fs-build-variables
-
-      - name: Checkout master-message-template
-        uses: actions/checkout@v4
-        with:
-          repository: secondlife/master-message-template
-          path: .master-message-template
 
       - name: Install autobuild and python dependencies
         run: pip3 install autobuild llsd llbase
