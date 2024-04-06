@@ -74,10 +74,6 @@
 #define LL_PROFILER_CONFIGURATION           LL_PROFILER_CONFIG_FAST_TIMER
 #endif
 
-#if LL_PROFILER_CONFIGURATION == LL_PROFILER_CONFIG_TRACY || LL_PROFILER_CONFIGURATION == LL_PROFILER_CONFIG_TRACY_FAST_TIMER
-    #include "Tracy.hpp"
-#endif
-
 extern thread_local bool gProfilerEnabled; // <FS:Beq/> This is being used to control memory allocations
 // <FS:Beq> We use the active flag to control deferred profiling. 
 // It is functionally separate to the (poorly named) gProfilerEnabled flag
@@ -95,6 +91,7 @@ namespace LLProfiler
 //      #define TRACY_NO_BROADCAST   1
 //      #define TRACY_ONLY_LOCALHOST 1
         #define TRACY_ONLY_IPV4      1
+        #include "Tracy.hpp"
 // <FS:Beq> Fixed mutual exclusion issues with RAM and GPU. NOTE: This might still break on Apple in which case we'll need to restrict that platform
         //// GPU Mutually exclusive with detailed memory tracing
         // #define LL_PROFILER_ENABLE_TRACY_OPENGL 0
