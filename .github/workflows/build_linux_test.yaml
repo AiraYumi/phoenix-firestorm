@@ -23,7 +23,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: FirestormViewer/fs-build-variables
-          ref: viewer
           path: .fs-build-variables
 
       - name: Checkout master-message-template
