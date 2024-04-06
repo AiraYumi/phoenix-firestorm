@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Linux dependencies
         if: runner.os == 'linux'
-        run: sudo apt update && sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev libpulse-dev build-essential git libssl-dev libxinerama-dev libxrandr-dev libfontconfig-dev libfreetype6-dev ninja-build
+        run: sudo apt update  && sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev libpulse-dev build-essential git libssl-dev libxinerama-dev libxrandr-dev libfontconfig-dev libfreetype6-dev ninja-build && sudo apt autoremove && sudo apt clean
 
       - name: Build
         id: build
