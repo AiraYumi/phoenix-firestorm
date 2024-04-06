@@ -28,7 +28,6 @@ set(cmake_SOURCE_FILES
         GLEXT.cmake
         GLH.cmake
         GLOD.cmake # <FS:Ansariel> Bring back GLOD
-        GoogleMock.cmake
         Havok.cmake
         Hunspell.cmake
         ICU4C.cmake
