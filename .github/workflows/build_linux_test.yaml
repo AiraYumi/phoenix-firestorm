@@ -37,6 +37,7 @@ jobs:
             libfontconfig-dev libfreetype6-dev ninja-build
           sudo apt autoremove
           sudo apt clean
+          df -h
 
       - name: Build
         id: build
