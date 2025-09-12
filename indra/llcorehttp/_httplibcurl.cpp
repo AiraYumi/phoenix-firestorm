@@ -545,6 +545,7 @@ void HttpLibcurl::policyUpdated(unsigned int policy_class)
         if (options.mPipelining > 1)
         {
             // We'll try to do pipelining on this multihandle
+            LL_INFOS(LOG_CORE) << "HTTP Pipelining Enable." << LL_ENDL;
             check_curl_multi_setopt(multi_handle,
                                      CURLMOPT_PIPELINING,
                                      1L);
@@ -560,6 +561,7 @@ void HttpLibcurl::policyUpdated(unsigned int policy_class)
         }
         else
         {
+            LL_INFOS(LOG_CORE) << "HTTP Pipelining Disable." << LL_ENDL;
             check_curl_multi_setopt(multi_handle,
                                      CURLMOPT_PIPELINING,
                                      0L);
