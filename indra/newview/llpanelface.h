@@ -140,6 +140,8 @@ protected:
     void updateMediaSettings();
     void updateMediaTitle();
 
+    bool isMediaTexSelected();
+
     void getState();
 
     void sendTexture();            // applies and sends texture
@@ -239,6 +241,7 @@ protected:
     void onCommitShiny();
     void onCommitAlphaMode();
     void onCommitFullbright();
+    void onCommitHideWater();
     void onCommitGlow();
     void onCommitPlanarAlign();
     void onCommitRepeatsPerMeter();
@@ -248,6 +251,7 @@ protected:
     void onCommitGLTFRotation();
     void onCommitGLTFTextureOffsetU();
     void onCommitGLTFTextureOffsetV();
+    void onCommitGLTFRepeatsPerMeter();
 
     void onClickAutoFix();
     void onAlignTexture();
@@ -269,6 +273,9 @@ public: // needs to be accessible to selection manager
     void onCopyTexture();
     void onPasteTexture();
     void onPasteTexture(LLViewerObject* objectp, S32 te);
+private:
+    // for copy/paste operations
+    bool validateInventoryItem(const LLSD& te, const std::string& prefix);
 
 protected:
     // <FS> Extended copy & paste buttons
@@ -334,6 +341,7 @@ private:
     LLRadioGroup* mRadioPbrType { nullptr };
 
     LLCheckBoxCtrl* mCheckFullbright { nullptr };
+    LLCheckBoxCtrl* mCheckHideWater{ nullptr };
 
     LLTextBox* mLabelColorTransp { nullptr };
     LLSpinCtrl* mCtrlColorTransp { nullptr }; // transparency = 1 - alpha
@@ -380,6 +388,7 @@ private:
     LLButton* mDelMedia { nullptr };
     LLSpinCtrl* mPBRScaleU { nullptr };
     LLSpinCtrl* mPBRScaleV { nullptr };
+    LLSpinCtrl* mPBRRepeat { nullptr };
     LLSpinCtrl* mPBRRotate { nullptr };
     LLSpinCtrl* mPBROffsetU { nullptr };
     LLSpinCtrl* mPBROffsetV { nullptr };
@@ -581,7 +590,9 @@ private:
     void updateVisibilityGLTF(LLViewerObject* objectp = nullptr);
 
     void updateSelectedGLTFMaterials(std::function<void(LLGLTFMaterial*)> func);
+    void updateSelectedGLTFMaterialsWithScale(std::function<void(LLGLTFMaterial*, const F32, const F32)> func);
     void updateGLTFTextureTransform(std::function<void(LLGLTFMaterial::TextureTransform*)> edit);
+    void updateGLTFTextureTransformWithScale(const LLGLTFMaterial::TextureInfo texture_info, std::function<void(LLGLTFMaterial::TextureTransform*, const F32, const F32)> edit);
 
     void setMaterialOverridesFromSelection();
 
@@ -593,6 +604,7 @@ private:
     // </FS>
 
     bool mIsAlpha;
+    bool mExcludeWater { false };
 
     LLSD            mClipboardParams;
 
@@ -679,6 +691,8 @@ public:
         static void getMaxSpecularRepeats(F32& repeats, bool& identical);
         static void getMaxNormalRepeats(F32& repeats, bool& identical);
         static void getCurrentDiffuseAlphaMode(U8& diffuse_alpha_mode, bool& identical, bool diffuse_texture_has_alpha);
+        static void selectionNormalScaleAutofit(LLPanelFace* panel_face, F32 repeats_per_meter);
+        static void selectionSpecularScaleAutofit(LLPanelFace* panel_face, F32 repeats_per_meter);
 
         DEF_GET_MAT_STATE(LLUUID, const LLUUID&, getNormalID, LLUUID::null, false, LLUUID::null);
         DEF_GET_MAT_STATE(LLUUID, const LLUUID&, getSpecularID, LLUUID::null, false, LLUUID::null);

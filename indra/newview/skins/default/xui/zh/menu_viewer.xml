@@ -34,6 +34,7 @@
 			<menu_item_call label="全部卸下" name="Detach All" />
 		</menu>
 		<menu_item_call label="移除選定的附件" name="Remove Selected Attachments" />
+		<menu_item_call label="化身入門禮包" name="Avatar Welcome Pack"/>
 		<menu_item_call label="選擇化身" name="Avatar Picker" />
 		<menu_item_call label="懸浮高度" name="HoverHeight" />
 		<menu label="動作" name="Movement">
@@ -58,7 +59,7 @@
 			<menu_item_call label="更新附件" name="Refresh Attachments" />
 			<menu_item_call label="重設為預設男性化身" name="ResetDefaultAvM" />
 			<menu_item_call label="重設為預設女性化身" name="ResetDefaultAvF" />
-			<menu_item_check label="顯示化身複雜性資訊" name="Avatar Draw Info" />
+			<menu_item_check label="顯示化身複雜度資訊" name="Avatar Draw Info" />
 			<menu_item_call label="指令碼" name="MyScripts" />
 			<menu_item_call label="延遲測試" name="Lag Meter" />
 			<menu_item_call label="重建LSL橋" name="Recreate LSL Bridge" />
@@ -77,7 +78,7 @@
 		<menu_item_call label="退出 [APP_NAME]" name="Quit" />
 	</menu>
 	<menu label="通訊" name="Communicate">
-		<menu label="線上狀態" name="Status">
+		<menu label="在線狀態" name="Status">
 			<menu_item_check label="離開" name="Away" />
 			<menu_item_check label="請勿打擾" name="Do Not Disturb" />
 			<menu_item_check label="自動回復" name="Set Autorespond" />
@@ -95,6 +96,7 @@
 		<menu_item_check label="聊天" name="Conversations" />
 		<menu_item_check label="快捷手勢" name="Gestures" />
 		<menu_item_call label="Flickr..." name="Flickr" />
+		<menu_item_call label="Primfeed..." name="Primfeed"/>
 		<menu_item_call label="Discord..." name="Discord" />
 		<menu_item_check label="聊天記錄" name="Conversation Log..." />
 		<menu_item_check label="附近的語音" name="Nearby Voice" />
@@ -142,8 +144,8 @@
 			<menu_item_check label="午夜" name="Midnight" />
 			<menu_item_check label="使用共享環境" name="Use Shared Environment" />
 			<menu_item_call label="我的環境" name="my_environs" />
-			<menu_item_call label="個人照明" name="adjustment_tool" />
-			<menu_item_check label="凍結雲彩" name="pause_clouds" />
+			<menu_item_call label="個人光照" name="adjustment_tool" />
+			<menu_item_check label="凍結雲層" name="pause_clouds" />
 			<menu label="批次匯入" name="WL Bulk Import">
 				<menu_item_call label="時間..." name="WL Bulk Import Days" />
 				<menu_item_call label="天空..." name="WL Bulk Import Skies" />
@@ -154,6 +156,7 @@
 			<menu_item_call label="相片工具" name="phototools_item_call" />
 			<menu_item_call label="相機工具" name="cameratools_item_call" />
 			<menu_item_check label="景深對焦鎖定" name="lock_focus_point" />
+			<menu_item_check label="顯示景深焦點的十字準線" name="render_focus_point"/>
 		</menu>
 		<menu_item_call label="區域搜尋" name="area_search" />
 		<menu_item_call label="聲音瀏覽器" name="Sound Explorer" />
@@ -222,7 +225,7 @@
 			<menu_item_check label="只選擇抽取式的物件" name="Select Only Movable Objects" />
 			<menu_item_check label="只選擇鎖定的物件" name="Select Only Locked Objects" />
 			<menu_item_check label="只選擇可複製的物件" name="Select Only Copyable Objects" />
-			<menu_item_check label="選擇不可見物體" name="Select Invisible Objects" />
+			<menu_item_check label="選擇不可見物件" name="Select Invisible Objects" />
 			<menu_item_check label="選擇反射探針" name="Select Reflection Probes" />
 			<menu_item_check label="按周圍環境選擇" name="Select By Surrounding" />
 			<menu_item_check label="包括屬於群組的物件" name="Include Group-Owned Objects" />
@@ -235,6 +238,13 @@
 			<menu_item_check label="突出顯示透明物件" name="Highlight Transparent" />
 			<menu_item_check label="-包括已綁定骨骼的透明物件" name="Include Transparent Rigged" />
 			<menu_item_check label="無後期處理" name="No Post" />
+			<menu label="選擇細節層次等級" name="Selection level of detail">
+				<menu_item_check label="預設" name="Default lod setting" />
+				<menu_item_check label="高" name="High lod setting" />
+				<menu_item_check label="中" name="Medium lod setting" />
+				<menu_item_check label="低" name="Low lod setting" />
+				<menu_item_check label="最低" name="Lowest lod setting" />
+			</menu>
 			<menu_item_check label="對齊到網格" name="Snap to Grid" />
 			<menu_item_call label="將物件XY對齊到網格" name="Snap Object XY to Grid" />
 			<menu_item_call label="使用選區為網格" name="Use Selection for Grid" />
@@ -318,7 +328,7 @@
 			<menu_item_check label="統計欄" name="Statistics Bar" />
 			<menu_item_check label="場景載入統計" name="Scene Load Statistics" />
 			<menu_item_check label="提高圖形效能" name="Performance" />
-			<menu_item_check label="顯示化身複雜性資訊" name="Avatar Draw Info" />
+			<menu_item_check label="顯示化身複雜度資訊" name="Avatar Draw Info" />
 		</menu>
 		<menu label="高亮顯示與可見度" name="Highlighting and Visibility">
 			<menu_item_check label="醒目信標" name="Cheesy Beacon" />
@@ -347,7 +357,7 @@
 			<menu_item_check label="水文" name="Rendering Type Water" />
 			<menu_item_check label="體積" name="Rendering Type Volume" />
 			<menu_item_check label="草地" name="Rendering Type Grass" />
-			<menu_item_check label="雲彩" name="Rendering Type Clouds" />
+			<menu_item_check label="雲層" name="Rendering Type Clouds" />
 			<menu_item_check label="粒子效果" name="Rendering Type Particles" />
 			<menu_item_check label="碰撞" name="Rendering Type Bump" />
 			<menu_item_check label="PBR" name="Rendering Type PBR" />
@@ -438,7 +448,10 @@
 			<menu_item_call label="強制軟體異常" name="Force Software Exception" />
 			<menu_item_call label="強製作業系統異常" name="Force OS Exception" />
 			<menu_item_call label="強制協程中軟體異常" name="Force Software Exception in Coroutine" />
-			<menu_item_call label="強製程式崩潰" name="Force a Crash in a Thread" />
+			<menu_item_call label="強制協程崩潰" name="Force a Crash in a Coroprocedure" />
+			<menu_item_call label="強制工作隊列崩潰" name="Force a Crash in a Work Queue" />
+			<menu_item_call label="強制執行緒中LLError崩潰" name="Force an LLError Crash in a Thread"/>
+			<menu_item_call label="強制執行緒中異常崩潰" name="Force an Exception Crash in a Thread"/>
 			<menu_item_call label="強制瀏覽器斷線" name="Force Disconnect Viewer" />
 			<menu_item_call label="類比記憶體不足" name="Memory Leaking Simulation" />
 		</menu>
@@ -510,10 +523,11 @@
 			<menu_item_check label="自動Alpha遮罩（延遲）" name="Automatic Alpha Masks (deferred)" />
 			<menu_item_check label="動畫紋理" name="Animation Textures" />
 			<menu_item_check label="禁用紋理" name="Disable Textures" />
-			<menu_item_call label="不顯示動畫" name="Derender Animesh" />
+			<menu_item_call label="禁用所有的動畫物件" name="Derender Animesh" />
 			<menu_item_check label="全解析度紋理(有風險)" name="Full Res Textures" />
 			<menu_item_check label="彩現附著的燈光" name="Render Attached Lights" />
 			<menu_item_check label="彩現附著的粒子" name="Render Attached Particles" />
+			<menu_item_check label="當視訊記憶體已滿時減少繪製距離" name="Reduce Draw Distance when VRAM is full" />
 			<menu_item_check label="收集字型頂點緩衝區" name="Collect Font Vertex Buffers"/>
 			<menu_item_check label="啟用著色器快取" name="Enable Shader Cache" />
 			<menu_item_call label="清除著色器快取" name="Shader Cache Clear" />
@@ -635,6 +649,8 @@
 		<menu_item_check label="HTTP 庫存" name="HTTP Inventory" />
 		<menu_item_call label="壓縮圖像" name="Compress Images" />
 		<menu_item_call label="測試檔案壓縮" name="Compress File Test" />
+		<menu_item_call label="Primfeed授權測試" name="primfeed_auth_test"/>
+		<menu_item_call label="Primfeed重設授權" name="primfeed_auth_clear"/>
 		<menu_item_call label="啟用記憶體洩漏視覺偵測器" name="Enable Visual Leak Detector" />
 		<menu_item_check label="輸出除錯小型轉儲" name="Output Debug Minidump" />
 		<menu_item_check label="下次運行時顯示控制台視窗" name="Console Window" />
@@ -648,6 +664,9 @@
 		<menu_item_call label="要求管理員狀態" name="Request Admin Options" />
 		<menu_item_call label="離開管理員狀態" name="Leave Admin Options" />
 		<menu_item_check label="顯示管理員選項" name="View Admin Options" />
+		<menu label="轉儲" name="Dump">
+			<menu_item_call label="林登檢視器紋理清單" name="LLViewerTexturelist"/>
+		</menu>
 	</menu>
 	<menu label="管理員" name="Admin">
 		<menu label="物件" name="AdminObject">

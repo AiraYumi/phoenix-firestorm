@@ -443,6 +443,9 @@ W celu umieszczenia mediów tylko na jednej powierzchni skorzystaj z narzędzia 
 	<notification name="ErrorCannotAffordUpload">
 		Potrzebujesz [COST]L$ aby przesłać ten element.
 	</notification>
+	<notification name="ErrorEncodingImage">
+		Nie udało się zakodować obrazu, powód: [REASON]
+	</notification>
 	<notification name="ErrorTextureCannotAfford">
 		Potrzebujesz [COST]L$ aby zapisać teksturę do swojej Szafy. Możesz zamiast tego kupić L$ lub zapisać teksturę na swoim komputerze.
 	</notification>
@@ -882,6 +885,11 @@ Plik może być za duży. Spróbuj zmniejszyć rozdzielczość, jakość lub spr
 
 Plik może być za duży. Spróbuj zmniejszyć rozdzielczość, jakość lub spróbować ponownie później.
 	</notification>
+	<notification name="CannotOpenFileTooBig">
+		Nie można otworzyć pliku.
+
+Podczas otwierania pliku w przeglądarce zabrakło pamięci. Plik może być za duży.
+	</notification>
 	<notification name="LandmarkCreated">
 		Dodano "[LANDMARK_NAME]" do folderu [FOLDER_NAME].
 	</notification>
@@ -1217,6 +1225,15 @@ Wprowadź nową nazwę:
 		<form name="form">
 			<button name="ReplaceList" text="Zastąp obecną listę"/>
 			<button name="SetName" text="Użyj nowej nazwy"/>
+		</form>
+	</notification>
+	<notification label="Usuń listę autokorekty" name="RemoveAutoReplaceList">
+		'[LIST_NAME]' zawiera [MAP_SIZE] wpisów.
+
+Czy na pewno chcesz usunąć tę listę?
+		<form name="form">
+			<button name="DeleteList" text="Usuń" />
+			<button name="Cancel" text="Anuluj" />
 		</form>
 	</notification>
 	<notification name="InvalidAutoReplaceEntry">
@@ -1801,9 +1818,8 @@ Obecnie ponowne dołączenie do tej grupy nie wiąże się z żadnymi opłatami.
 	<notification label="Blokowanie obiektów według nazwy nie powiodło się" name="MuteByNameFailed">
 		Rezydent/obiekt jest już zablokowany.
 	</notification>
-	<notification name="RemoveItemWarn">
-		Pomimo, że jest to dozwolone, usunięcie zawartości może uszkodzić obiekt. Chcesz usunąć?
-		<usetemplate name="okcancelbuttons" notext="Anuluj" />
+	<notification name="CantModifyContentInNoModTask">
+		Nie masz uprawnień do modyfikowania zawartości tego obiektu
 	</notification>
 	<notification name="CantOfferCallingCard">
 		Nie możesz dać wizytówki w tym momencie. Spróbuj jeszcze raz za chwilę.
@@ -2827,6 +2843,11 @@ Ponieważ ma to wpływ na wpisywane hasło, możesz chcieć go wyłączyć.
 	<notification name="MaterialNoPermissions">
 		Nie masz uprawnień na zobaczenie tego materiału.
 	</notification>
+	<notification name="MaterialImagesWereScaled">
+		Jedna lub więcej tekstur w tym materiale zostało przeskalowanych, aby mieściły się w limitach.
+Tekstury muszą mieć wymiary będące potęgami dwójki i nie mogą przekraczać [MAX_SIZE]x[MAX_SIZE] pikseli.
+		<usetemplate ignoretext="Ostrzegaj, jeśli tekstury są skalowane podczas przesyłania." name="okignore" />
+	</notification>
 	<notification name="RezItemNoPermissions">
 		Nie masz uprawnień na stworzenie obiektu.
 	</notification>
@@ -3786,7 +3807,7 @@ Wstępnie przetworzone tekstury [RESOLUTION] zostały lokalnie zaktualizowane dl
 [REASON]
 	</notification>
 	<notification name="CannotUploadMaterial">
-		Wystąpił problem podczas przesyłania pliku
+		Nie można przesłać pliku materiału. Plik może być uszkodzony, w nieobsługiwanym formacie lub zawierać nieprawidłowe dane. Upewnij się, że używasz prawidłowego pliku GLTF/GLB - z poprawnie zdefiniowanymi materiałami.
 	</notification>
 	<notification label="Zapisz materiał" name="SaveMaterialAs">
 		Nazwij ten materiał:
@@ -4337,7 +4358,10 @@ Anulowano.
 		Przepraszam, ale nie mogę unieruchomić tego użytkownika.
 	</notification>
 	<notification name="NowOwnObject">
-		Jesteś od teraz właścicielem obiektu [OBJECT_NAME]
+		Jesteś od teraz właścicielem obiektu [OBJECT_NAME].
+	</notification>
+	<notification name="NowOwnObjectInv">
+		Jesteś od teraz właścicielem obiektu [OBJECT_NAME] - został on umieszczony w Twojej Szafie.
 	</notification>
 	<notification name="CantRezOnLand">
 		Nie można zrezzować obiektu na pozycji [OBJECT_POS], ponieważ właściciel działki na to nie zezwala. Użyj narzędzia ziemi, aby zobaczyć kto nim jest.
@@ -5219,7 +5243,10 @@ Czy chcesz autoryzować [APP_NAME] do przesyłania zdjęć na Flickr?
 		Autoryzacja Flickr nie powiodła się. Spróbuj ponownie i sprawdź dokładnie kod weryfikacyjny.
 	</notification>
 	<notification name="ExodusFlickrUploadComplete">
-		Możesz znaleźć swoje zdjęcie [http://www.flickr.com/photos/upload/edit/?ids=[ID] tutaj].
+		Możesz znaleźć swoje zdjęcie [https://www.flickr.com/photos/me/[ID] tutaj].
+	</notification>
+	<notification name="FSPrimfeedUploadComplete">
+		Możesz znaleźć swój post [[PF_POSTURL] tutaj].
 	</notification>
 	<notification name="RegionTrackerAdd">
 		Jaką etykietę chcesz nadać regionowi
@@ -5424,6 +5451,17 @@ Czy chcesz kontynuować?
 	<notification name="NoSupportGLTFShader">
 		Sceny GLTF nie są jeszcze obsługiwane przez Twoją kartę graficzną.
 	</notification>
+	<notification name="WaterExclusionSurfacesWarning">
+		Zaznaczenie pola wyboru "ukryj wodę" spowoduje nadpisanie wybranych opcji tekstury, powierzchni i połysku.
+		<usetemplate name="okcancelbuttons" notext="Anuluj" yestext="Kontynuuj" />
+	</notification>
+	<notification name="WaterExclusionNoMaterial">
+		Nie można nałożyć materiału na powierzchnię, która ukrywa wodę.
+	</notification>
+	<notification name="ImageUploadResized">
+		Tekstura, którą przesyłasz, została przeskalowana z [ORIGINAL_WIDTH]x[ORIGINAL_HEIGHT] do [NEW_WIDTH]x[NEW_HEIGHT], aby dopasować się do maksymalnego rozmiaru [MAX_WIDTH]x[MAX_HEIGHT] pikseli.
+		<usetemplate ignoretext="Skalowanie tekstury przy przesyłaniu" name="okignore" />
+	</notification>
 	<notification name="EnableAutoFPSWarning">
 		Zamierzasz włączyć funkcję AutoFPS. Wszystkie niezapisane ustawienia grafiki zostaną utracone.
 
@@ -5475,5 +5513,30 @@ Niektóre programy antywirusowe mogą błędnie blokować części [APP_NAME]a, 
 Aby uzyskać szczegółowe instrukcje dotyczące umieszczania [APP_NAME]a na białej liście - w tym listę plików i folderów do wykluczenia - zapoznaj się z naszym przewodnikiem:
 
 https://wiki.firestormviewer.org/antivirus_whitelisting
+	</notification>
+	<notification label="Potwierdź nadpisanie pozy" name="ConfirmPoserOverwrite">
+		Nadpisać istniejącą pozę “[POSE_NAME]”?
+		<usetemplate name="okcancelbuttons" notext="Anuluj" yestext="OK" />
+	</notification>
+	<notification name="PrimfeedLoginRequestFailed">
+		Żądanie logowania odrzucone przez Primfeed.
+	</notification>
+	<notification name="PrimfeedAuthorizationFailed">
+		Autoryzacja w Primfeed nie powiodła się. Sekwencja autoryzacji nie została ukończona.
+	</notification>
+	<notification name="PrimfeedAuthorizationAlreadyInProgress">
+		Autoryzacja z Primfeed jest już w toku. Przed ponowną próbą należy ukończyć autoryzację Primfeed w przeglądarce internetowej.
+	</notification>
+	<notification name="PrimfeedAuthorizationSuccessful">
+		Autoryzacja w Primfeed została ukończona. Teraz możesz publikować obrazy w Primfeed.
+	</notification>
+	<notification name="PrimfeedValidateFailed">
+		Weryfikacja użytkownika w Primfeed nie powiodła się. Primfeed nie rozpoznał tego konta lub logowanie nie powiodło się.
+	</notification>
+	<notification name="PrimfeedAlreadyAuthorized">
+		Połączyłeś/aś już to konto z Primfeed. Użyj przycisku resetowania, jeśli chcesz zacząć od nowa.
+	</notification>
+	<notification name="PrimfeedUserStatusFailed">
+		Zalogowanie użytkownika w Primfeed powiodło się, ale sprawdzenie statusu już nie. Sprawdź, czy Primfeed działa.
 	</notification>
 </notifications>

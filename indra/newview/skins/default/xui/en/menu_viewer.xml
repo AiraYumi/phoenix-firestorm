@@ -329,11 +329,11 @@
       </menu_item_call>
       <menu_item_separator/>
       <menu_item_call
-       label="Choose an avatar"
-       name="Avatar Picker">
+        label="Avatar Welcome Pack..."
+        name="Avatar Welcome Pack">
         <menu_item_call.on_click
          function="Floater.Toggle"
-         parameter="avatar" />
+         parameter="avatar_welcome_pack" />
         <menu_item_call.on_visible
          function="GridFeatureCheck"
          parameter="avatar_picker"/>
@@ -852,6 +852,13 @@
         <menu_item_call.on_click
           function="Floater.Toggle"
           parameter="flickr"/>
+      </menu_item_call>
+      <menu_item_call
+        label="Primfeed..."
+        name="Primfeed">
+        <menu_item_call.on_click
+          function="Floater.Toggle"
+          parameter="primfeed"/>
       </menu_item_call>
       <menu_item_call
         label="Discord..."
@@ -2219,6 +2226,64 @@
              parameter="RenderDisablePostProcessing" />
           </menu_item_check>
           
+
+          <menu
+           create_jump_keys="true"
+           label="Selection level of detail"
+           name="Selection level of detail"
+           tear_off="true">
+
+              <menu_item_check
+                label="Default"
+                name="Default lod setting">
+                  <menu_item_check.on_check
+                   function="Tools.ToolsCheckSelectionLODMode"
+                   parameter="default" />
+                  <menu_item_check.on_click
+                   function="Tools.SelectionLODMode"
+                   parameter="default" />
+              </menu_item_check>
+              <menu_item_check
+                label="High"
+                name="High lod setting">
+                  <menu_item_check.on_check
+                   function="Tools.ToolsCheckSelectionLODMode"
+                   parameter="high" />
+                  <menu_item_check.on_click
+                   function="Tools.SelectionLODMode"
+                   parameter="high" />
+              </menu_item_check>
+              <menu_item_check
+                label="Medium"
+                name="Medium lod setting">
+                  <menu_item_check.on_check
+                   function="Tools.ToolsCheckSelectionLODMode"
+                   parameter="medium" />
+                  <menu_item_check.on_click
+                   function="Tools.SelectionLODMode"
+                   parameter="medium" />
+              </menu_item_check>
+              <menu_item_check
+                label="Low"
+                name="Low lod setting">
+                  <menu_item_check.on_check
+                   function="Tools.ToolsCheckSelectionLODMode"
+                   parameter="low" />
+                  <menu_item_check.on_click
+                   function="Tools.SelectionLODMode"
+                   parameter="low" />
+              </menu_item_check>
+              <menu_item_check
+                label="Lowest"
+                name="Lowest lod setting">
+                  <menu_item_check.on_check
+                   function="Tools.ToolsCheckSelectionLODMode"
+                   parameter="lowest" />
+                  <menu_item_check.on_click
+                   function="Tools.SelectionLODMode"
+                   parameter="lowest" />
+              </menu_item_check>
+          </menu>
         <menu_item_separator/>
 
                 <menu_item_check
@@ -2473,6 +2538,14 @@
              parameter="WebLaunchExternalTarget,https://www.firestormviewer.org/" />
        </menu_item_call>
     	<menu_item_call
+             label="Firestorm Primfeed"
+             name="Firestorm Primfeed">
+             <menu_item_call.on_click
+             function="PromptShowURL"
+             name="firestorm_primfeed_url"
+             parameter="WebLaunchExternalTarget,https://www.primfeed.com/firestorm-viewer" />
+       </menu_item_call>
+    	<menu_item_call
              label="Firestorm Flickr"
              name="Firestorm Flickr">
              <menu_item_call.on_click
@@ -2652,18 +2725,11 @@
         </menu_item_call>
         <menu_item_separator/>
         <menu_item_call
-             label="[SECOND_LIFE] News"
-             name="Second Life News">
-             <menu_item_call.on_click
-                 function="Advanced.ShowURL"
-                 parameter="http://community.secondlife.com/t5/Featured-News/bg-p/blog_feature_news"/>  
-        </menu_item_call>
-        <menu_item_call
              label="[SECOND_LIFE] Blogs"
              name="Second Life Blogs">
              <menu_item_call.on_click
                  function="Advanced.ShowURL"
-                 parameter="http://community.secondlife.com/t5/Blogs/ct-p/Blogs"/>
+                 parameter="https://community.secondlife.com/news/"/>
         </menu_item_call>-->
         <menu_item_separator/>
         <menu_item_call
@@ -4143,10 +4209,28 @@
                  function="Advanced.ForceErrorSoftwareExceptionCoro" />
             </menu_item_call>
             <menu_item_call
-             label="Force a Crash in a Thread"
-             name="Force a Crash in a Thread">
+             label="Force a Crash in a Coroprocedure"
+             name="Force a Crash in a Coroprocedure">
+                <menu_item_call.on_click
+                 function="Advanced.ForceErrorCoroprocedureCrash" />
+            </menu_item_call>
+            <menu_item_call
+             label="Force a Crash in a Work Queue"
+             name="Force a Crash in a Work Queue">
+                <menu_item_call.on_click
+                 function="Advanced.ForceErrorWorkQueueCrash" />
+            </menu_item_call>
+            <menu_item_call
+             label="Force an LLError Crash in a Thread"
+             name="Force an LLError Crash in a Thread">
                 <menu_item_call.on_click
                  function="Advanced.ForceErrorThreadCrash" />
+            </menu_item_call>
+            <menu_item_call
+             label="Force an Exception Crash in a Thread"
+             name="Force an Exception Crash in a Thread">
+                <menu_item_call.on_click
+                 function="Advanced.ForceExceptionThreadCrash" />
             </menu_item_call>
             <menu_item_call
              label="Force Disconnect Viewer"
@@ -4774,6 +4858,16 @@
                  parameter="RenderAttachedParticles" />
             </menu_item_check>
             <menu_item_check
+             label="Reduce Draw Distance when VRAM is full"
+             name="Reduce Draw Distance when VRAM is full">
+                <menu_item_check.on_check
+                 function="CheckControl"
+                 parameter="FSDrawDistanceVRAMOptimization" />
+                <menu_item_check.on_click
+                 function="ToggleControl"
+                 parameter="FSDrawDistanceVRAMOptimization" />
+            </menu_item_check>
+            <menu_item_check
              label="Collect Font Vertex Buffers"
              name="Collect Font Vertex Buffers">
                 <menu_item_check.on_check
@@ -5268,6 +5362,13 @@
                  parameter="font_test" />
             </menu_item_call>
             <menu_item_call
+             label="Show SLapps Test"
+             name="Show SLapps Test">
+                <menu_item_call.on_click
+                 function="Floater.Show"
+                 parameter="slapp_test" />
+            </menu_item_call>
+            <menu_item_call
              label="Load from XML"
              name="Load from XML">
                 <menu_item_call.on_click
@@ -5657,6 +5758,18 @@
         <menu_item_call.on_click
          function="Advanced.CompressFileTest" />
       </menu_item_call>
+      <menu_item_call
+       label="Primfeed Auth Test"
+       name="primfeed_auth_test">
+        <menu_item_call.on_click
+         function="Advanced.PrimfeedAuth" />
+      </menu_item_call>
+      <menu_item_call
+       label="Primfeed Auth Reset"
+       name="primfeed_auth_clear">
+        <menu_item_call.on_click
+         function="Advanced.PrimfeedAuthReset" />
+      </menu_item_call>
 
       <menu_item_call
          label="Enable Visual Leak Detector"
@@ -5768,6 +5881,20 @@
             <menu_item_check.on_click
              function="Advanced.ToggleViewAdminOptions" />
         </menu_item_check>
+
+        <menu_item_separator/>
+        <menu
+         create_jump_keys="true"
+         label="Dump"
+         name="Dump"
+         tear_off="true">
+            <menu_item_call
+             label="LLViewerTexturelist"
+             name="LLViewerTexturelist">
+                <menu_item_call.on_click
+                 function="Develop.TextureList.Dump" />
+            </menu_item_call>
+        </menu>        
     </menu>
     <menu
      create_jump_keys="true"

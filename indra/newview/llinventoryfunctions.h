@@ -73,6 +73,10 @@ void show_task_item_profile(const LLUUID& item_uuid, const LLUUID& object_id);
 void show_item_original(const LLUUID& item_uuid);
 void reset_inventory_filter();
 
+// <AS:Chanayane> Delete from outfit context menu entry
+void delete_from_outfit(const uuid_vec_t& ids);
+// </AS:Chanayane>
+
 // Nudge the listing categories in the inventory to signal that their marketplace status changed
 void update_marketplace_category(const LLUUID& cat_id, bool perform_consistency_enforcement = true, bool skip_clear_listing = false);
 // Nudge all listing categories to signal that their marketplace status changed
@@ -85,6 +89,7 @@ void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::s
 
 void copy_inventory_category(LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& parent_id, const LLUUID& root_copy_id = LLUUID::null, bool move_no_copy_items = false);
 void copy_inventory_category(LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& parent_id, const LLUUID& root_copy_id, bool move_no_copy_items, inventory_func_type callback);
+void copy_inventory_category(LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& parent_id, const LLUUID& root_copy_id, bool move_no_copy_items, LLPointer<LLInventoryCallback> callback);
 
 void copy_inventory_category_content(const LLUUID& new_cat_uuid, LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& root_copy_id, bool move_no_copy_items);
 
@@ -119,14 +124,32 @@ std::string get_category_path(LLUUID cat_id);
 
 bool can_move_to_outfit(LLInventoryItem* inv_item, bool move_is_into_current_outfit);
 bool can_move_to_landmarks(LLInventoryItem* inv_item);
-bool can_move_to_my_outfits(LLInventoryModel* model, LLInventoryCategory* inv_cat, U32 wear_limit);
+bool can_move_to_my_outfits_as_outfit(LLInventoryModel* model, LLInventoryCategory* inv_cat, U32 wear_limit);
+bool can_move_to_my_outfits_as_subfolder(LLInventoryModel* model, LLInventoryCategory* inv_cat, S32 depth = 0);
 std::string get_localized_folder_name(LLUUID cat_uuid);
 void new_folder_window(const LLUUID& folder_id);
 void ungroup_folder_items(const LLUUID& folder_id);
+bool get_is_favorite(const LLInventoryObject* object);
+bool get_is_favorite(const LLUUID& obj_id);
+void set_favorite(const LLUUID& obj_id, bool favorite);
+void toggle_favorite(const LLUUID& obj_id);
+void toggle_favorites(const uuid_vec_t& ids);
 std::string get_searchable_description(LLInventoryModel* model, const LLUUID& item_id);
 std::string get_searchable_creator_name(LLInventoryModel* model, const LLUUID& item_id);
 std::string get_searchable_UUID(LLInventoryModel* model, const LLUUID& item_id);
 bool can_share_item(const LLUUID& item_id);
+
+enum EMyOutfitsSubfolderType
+{
+    MY_OUTFITS_NO,
+    MY_OUTFITS_SUBFOLDER,
+    MY_OUTFITS_OUTFIT,
+    MY_OUTFITS_SUBOUTFIT,
+};
+EMyOutfitsSubfolderType myoutfit_object_subfolder_type(
+    LLInventoryModel* model,
+    const LLUUID& obj_id,
+    const LLUUID& my_outfits_id);
 
 /**                    Miscellaneous global functions
  **                                                                            **
@@ -194,7 +217,9 @@ class LLInventoryCollectFunctor
 {
 public:
     virtual ~LLInventoryCollectFunctor(){};
-    virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item) = 0;
+        virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item) = 0;
+
+        virtual bool exceedsLimit() { return false; }
 
     static bool itemTransferCommonlyAllowed(const LLInventoryItem* item);
 };
@@ -241,6 +266,24 @@ protected:
 // the type is the type passed in during construction.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+class LLIsFolderType : public LLInventoryCollectFunctor
+{
+public:
+    LLIsFolderType(LLFolderType::EType type) : mType(type) {}
+    virtual ~LLIsFolderType() {}
+    virtual bool operator()(LLInventoryCategory* cat,
+        LLInventoryItem* item);
+protected:
+    LLFolderType::EType mType;
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLIsType
+//
+// Implementation of a LLInventoryCollectFunctor which returns true if
+// the type is the type passed in during construction.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 class LLIsType : public LLInventoryCollectFunctor
 {
 public:
@@ -250,6 +293,24 @@ public:
                             LLInventoryItem* item);
 protected:
     LLAssetType::EType mType;
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLIsOneOfTypes
+//
+// Implementation of a LLInventoryCollectFunctor which returns true if
+// the type is one of the types passed in during construction.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class LLIsOneOfTypes : public LLInventoryCollectFunctor
+{
+public:
+    LLIsOneOfTypes(const std::vector<LLAssetType::EType> &types) : mTypes(types) {}
+    virtual ~LLIsOneOfTypes() {}
+    virtual bool operator()(LLInventoryCategory* cat,
+        LLInventoryItem* item);
+protected:
+    std::vector <LLAssetType::EType> mTypes;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -330,6 +391,18 @@ protected:
     PermissionBit mPerm;
     LLUUID          mAgentID;
     LLUUID          mGroupID;
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLFavoritesCollector
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLFavoritesCollector : public LLInventoryCollectFunctor
+{
+public:
+    LLFavoritesCollector() {}
+    virtual ~LLFavoritesCollector() {}
+    virtual bool operator()(LLInventoryCategory* cat,
+        LLInventoryItem* item);
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -606,6 +679,7 @@ struct LLInventoryAction
     static void callback_copySelected(const LLSD& notification, const LLSD& response, class LLInventoryModel* model, class LLFolderView* root, const std::string& action);
     static void onItemsRemovalConfirmation(const LLSD& notification, const LLSD& response, LLHandle<LLFolderView> root);
     static void removeItemFromDND(LLFolderView* root);
+    static void fileUploadLocation(const LLUUID& dest_id, const std::string& action);
 
     static void saveMultipleTextures(const std::vector<std::string>& filenames, std::set<LLFolderViewItem*> selected_items, LLInventoryModel* model);
 

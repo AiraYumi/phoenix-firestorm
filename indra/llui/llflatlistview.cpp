@@ -70,7 +70,7 @@ const LLRect& LLFlatListView::getItemsRect() const
 bool LLFlatListView::addItem(LLPanel * item, const LLSD& value /*= LLUUID::null*/, EAddPosition pos /*= ADD_BOTTOM*/,bool rearrange /*= true*/)
 {
     if (!item) return false;
-    if (value.isUndefined()) return false;
+    if (value.isUndefined()) return false; // item stays an orphan?!!!
 
     //force uniqueness of items, easiest check but unreliable
     if (item->getParent() == mItemsPanel) return false;
@@ -474,6 +474,7 @@ LLFlatListView::LLFlatListView(const LLFlatListView::Params& p)
   , mNoItemsCommentTextbox(NULL)
   , mIsConsecutiveSelection(false)
   , mKeepSelectionVisibleOnReshape(p.keep_selection_visible_on_reshape)
+  , mFocusOnItemClicked(true)
   , mMagicalHackyHeightPadding(p.magical_hacky_height_padding)
 {
     mBorderThickness = getBorderWidth();
@@ -626,7 +627,10 @@ void LLFlatListView::onItemMouseClick(item_pair_t* item_pair, MASK mask)
         return;
     }
 
-    setFocus(true);
+    if (mFocusOnItemClicked)
+    {
+        setFocus(true);
+    }
 
     bool select_item = !isSelected(item_pair);
 
@@ -1361,14 +1365,22 @@ void LLFlatListViewEx::updateNoItemsMessage(const std::string& filter_string)
     }
 }
 
-bool LLFlatListViewEx::getForceShowingUnmatchedItems()
+bool LLFlatListViewEx::getForceShowingUnmatchedItems() const
 {
     return mForceShowingUnmatchedItems;
 }
 
-void LLFlatListViewEx::setForceShowingUnmatchedItems(bool show)
+void LLFlatListViewEx::setForceShowingUnmatchedItems(bool show, bool notify_parent)
+{
+    if (mForceShowingUnmatchedItems != show)
 {
     mForceShowingUnmatchedItems = show;
+        if (!mFilterSubString.empty())
+        {
+            updateNoItemsMessage(mFilterSubString);
+            filterItems(false, true);
+        }
+    }
 }
 
 void LLFlatListViewEx::setFilterSubString(const std::string& filter_str, bool notify_parent)
@@ -1436,6 +1448,7 @@ void LLFlatListViewEx::filterItems(bool re_sort, bool notify_parent)
 
     if (visibility_changed && notify_parent)
     {
+        rearrangeItems();
         notifyParentItemsRectChanged();
     }
 }

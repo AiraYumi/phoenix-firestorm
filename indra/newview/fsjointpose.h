@@ -58,34 +58,46 @@ class FSJointPose
     bool isCollisionVolume() const { return mIsCollisionVolume; }
 
     /// <summary>
-    /// Gets the position change the animator wishes the joint to have.
+    /// Gets the 'public' position of the joint.
     /// </summary>
-    LLVector3 getPositionDelta() const { return mPositionDelta; }
+    LLVector3 getPublicPosition() const { return mCurrentState.mPosition; }
 
     /// <summary>
-    /// Sets the position the animator wishes the joint to be in.
+    /// Sets the 'public' position of the joint.
     /// </summary>
-    void setPositionDelta(const LLVector3& pos);
-
-    /// <summary>
-    /// Undoes the last position set, if any.
-    /// </summary>
-    void undoLastPositionChange();
+    void setPublicPosition(const LLVector3& pos);
 
     /// <summary>
     /// Undoes the last position set, if any.
     /// </summary>
-    void redoLastPositionChange();
+    void undoLastChange();
 
     /// <summary>
-    /// Gets the rotation the animator wishes the joint to be in.
+    /// Undoes the last position set, if any.
     /// </summary>
-    LLQuaternion getRotationDelta() const { return mRotation.deltaRotation; }
+    void redoLastChange();
 
     /// <summary>
-    /// Sets the rotation the animator wishes the joint to be in.
+    /// Resets the joint to its conditions when posing started.
     /// </summary>
-    void setRotationDelta(const LLQuaternion& rot);
+    void resetJoint();
+
+    /// <summary>
+    /// Gets the 'public' rotation of the joint.
+    /// </summary>
+    LLQuaternion getPublicRotation() const { return mCurrentState.mRotation; }
+
+    /// <summary>
+    /// Sets the 'public' rotation of the joint.
+    /// </summary>
+    /// <param name="zeroBase">Whether to zero the base rotation on setting the supplied rotation.</param>
+    /// <param name="rot">The change in rotation to apply.</param>
+    /// <remarks>
+    /// 'Public rotation' is the amount of rotation the user has added to the initial state.
+    /// Public rotation is what a user may save to an external format (such as BVH).
+    /// This distinguishes 'private' rotation, which is the state inherited from something like a pose in-world.
+    /// </remarks>
+    void setPublicRotation(bool zeroBase, const LLQuaternion& rot);
 
     /// <summary>
     /// Reflects the base and delta rotation of the represented joint left-right.
@@ -93,9 +105,10 @@ class FSJointPose
     void reflectRotation();
 
     /// <summary>
-    /// Sets the base rotation of the represented joint to zero.
+    /// Sets the private rotation of the represented joint to zero.
     /// </summary>
-    void zeroBaseRotation();
+    /// <param name="lockInBvh">Whether the joint should be locked if exported to BVH.</param>
+    void zeroBaseRotation(bool lockInBvh);
 
     /// <summary>
     /// Queries whether the represented joint is zero.
@@ -104,43 +117,26 @@ class FSJointPose
     bool isBaseRotationZero() const;
 
     /// <summary>
-    /// Undoes the last rotation set, if any.
-    /// Ordinarily the queue does not contain the current rotation, because we rely on time to add, and not button-up.
-    /// When we undo, if we are at the top of the queue, we need to add the current rotation so we can redo back to it.
-    /// Thus when we start undoing, mUndoneRotationIndex points at the current rotation.
+    /// Gets whether an undo of this joint may be performed.
     /// </summary>
-    void undoLastRotationChange();
+    /// <returns>true if the joint may have a undo applied, otherwise false.</returns>
+    bool canPerformUndo() const;
 
     /// <summary>
-    /// Redoes the last rotation set, if any.
+    /// Gets whether a redo of this joint may be performed.
     /// </summary>
-    void redoLastRotationChange();
+    /// <returns>true if the joint may have a redo applied, otherwise false.</returns>
+    bool canPerformRedo() const { return mUndoneJointStatesIndex > 0; }
 
     /// <summary>
-    /// Gets whether a redo of this joints rotation may be performed.
+    /// Gets the 'public' scale of the joint.
     /// </summary>
-    /// <returns>true if the joint can have a redo applied, otherwise false.</returns>
-    bool canRedoRotation() const { return mUndoneRotationIndex > 0; }
+    LLVector3 getPublicScale() const { return mCurrentState.mScale; }
 
     /// <summary>
-    /// Gets the scale the animator wishes the joint to have.
+    /// Sets the 'public' scale of the joint.
     /// </summary>
-    LLVector3 getScaleDelta() const { return mScaleDelta; }
-
-    /// <summary>
-    /// Sets the scale the animator wishes the joint to have.
-    /// </summary>
-    void setScaleDelta(const LLVector3& scale);
-
-    /// <summary>
-    /// Undoes the last scale set, if any.
-    /// </summary>
-    void undoLastScaleChange();
-
-    /// <summary>
-    /// Redoes the last scale set, if any.
-    /// </summary>
-    void redoLastScaleChange();
+    void setPublicScale(const LLVector3& scale);
 
     /// <summary>
     /// Exchanges the rotations between two joints.
@@ -163,57 +159,168 @@ class FSJointPose
     void recaptureJoint();
 
     /// <summary>
+    /// Recalculates the delta reltive to the base for a new rotation.
+    /// </summary>
+    /// <param name="zeroBase">Whether to zero the base rotation on setting the supplied rotation.</param>
+    /// <returns>The rotation of the public difference between before and after recapture.</returns>
+    LLQuaternion recaptureJointAsDelta(bool zeroBase);
+
+    /// <summary>
+    /// Clears the undo/redo deque.
+    /// </summary>
+    void purgeUndoQueue();
+
+    /// <summary>
+    /// Gets whether the user has specified the base rotation of a joint to be zero.
+    /// </summary>
+    /// <returns>True if the user performed some action to specify zero rotation as the base, otherwise false.</returns>
+    bool userHasSetBaseRotationToZero() const;
+
+    /// <summary>
+    /// Gets whether the rotation of a joint has been 'locked' so that its world rotation can remain constant while parent joints change.
+    /// </summary>
+    /// <returns>True if the joint is rotationally locked to the world, otherwise false.</returns>
+    bool getWorldRotationLockState() const;
+
+    /// <summary>
+    /// Sets whether the world-rotation of a joint has been 'locked' so that as its parent joints change rotation or position, this joint keeps a constant world rotation.
+    /// </summary>
+    /// <param name="newState">The new state for the world-rotation lock.</param>
+    void setWorldRotationLockState(bool newState);
+
+    /// <summary>
     /// Reverts the position/rotation/scale to their values when the animation begun.
     /// This treatment is required for certain joints, particularly Collision Volumes and those bones not commonly animated by an AO.
     /// </summary>
     void revertJoint();
 
-    LLVector3 getTargetPosition() const { return mPositionDelta + mBeginningPosition; }
-    LLQuaternion getTargetRotation() const { return mRotation.getTargetRotation(); }
-    LLVector3 getTargetScale() const { return mScaleDelta + mBeginningScale; }
+    LLQuaternion getTargetRotation() const { return mCurrentState.getTargetRotation(); }
+    LLVector3    getTargetPosition() const { return mCurrentState.getTargetPosition(); }
+    LLVector3    getTargetScale() const { return mCurrentState.getTargetScale(); }
 
     /// <summary>
     /// Gets the pointer to the jointstate for the joint this represents.
     /// </summary>
     LLPointer<LLJointState> getJointState() const { return mJointState; }
 
-    /// <summary>
-    /// A class wrapping base and delta rotation, attempting to keep baseRotation as secret as possible.
-    /// Among other things, facilitates easy undo/redo through the joint-recapture process.
-    /// </summary>
-    class FSJointRotation
+    class FSJointState
     {
       public:
-        FSJointRotation(LLQuaternion base) { baseRotation.set(base); }
-
-        FSJointRotation(LLQuaternion base, LLQuaternion delta)
+        FSJointState(LLJoint* joint)
         {
-            baseRotation.set(base);
-            deltaRotation.set(delta);
+            mStartingRotation.set(joint->getRotation());
+            mBaseRotation.set(joint->getRotation());
+            mBasePosition.set(joint->getPosition());
+            mBaseScale.set(joint->getScale());
         }
 
-        FSJointRotation() = default;
-
-        LLQuaternion baseRotation;
-        LLQuaternion deltaRotation;
-        LLQuaternion getTargetRotation() const { return deltaRotation * baseRotation; }
+        FSJointState() = default;
+        LLQuaternion getTargetRotation() const { return mRotation * mBaseRotation; }
+        LLVector3    getTargetPosition() const { return mPosition + mBasePosition; }
+        LLVector3    getTargetScale() const { return mScale + mBaseScale; }
 
         void reflectRotation()
         {
-            baseRotation.mQ[VX] *= -1;
-            baseRotation.mQ[VZ] *= -1;
-            deltaRotation.mQ[VX] *= -1;
-            deltaRotation.mQ[VZ] *= -1;
+            mBaseRotation.mQ[VX] *= -1;
+            mBaseRotation.mQ[VZ] *= -1;
+            mRotation.mQ[VX] *= -1;
+            mRotation.mQ[VZ] *= -1;
         }
 
-        void set(const FSJointRotation& jRot)
+        void cloneRotationFrom(FSJointState otherState)
         {
-            baseRotation.set(jRot.baseRotation);
-            deltaRotation.set(jRot.deltaRotation);
+            mBaseRotation.set(otherState.mBaseRotation);
+            mRotation.set(otherState.mRotation);
+            mUserSpecifiedBaseZero = otherState.mUserSpecifiedBaseZero;
         }
+
+        bool baseRotationIsZero() const { return mBaseRotation == LLQuaternion::DEFAULT; }
+
+        void resetJoint()
+        {
+            mUserSpecifiedBaseZero = false;
+            mRotationIsWorldLocked = false;
+            mBaseRotation.set(mStartingRotation);
+            mRotation.set(LLQuaternion::DEFAULT);
+            mPosition.setZero();
+            mScale.setZero();
+        }
+
+        void zeroBaseRotation() { mBaseRotation = LLQuaternion::DEFAULT; }
+
+        void revertJointToBase(LLJoint* joint) const
+        {
+            if (!joint)
+                return;
+
+            joint->setRotation(mBaseRotation);
+            joint->setPosition(mBasePosition);
+            joint->setScale(mBaseScale);
+        }
+
+        LLQuaternion updateFromJoint(LLJoint* joint, bool zeroBase)
+        {
+            if (!joint)
+                return LLQuaternion::DEFAULT;
+
+            LLQuaternion initalPublicRot = mRotation;
+            LLQuaternion invRot = mBaseRotation;
+            invRot.conjugate();
+            LLQuaternion newPublicRot = joint->getRotation() * invRot;
+
+            if (zeroBase)
+            {
+                mUserSpecifiedBaseZero = zeroBase;
+                zeroBaseRotation();
+            }
+
+            mRotation.set(newPublicRot);
+            mPosition.set(joint->getPosition() - mBasePosition);
+            mScale.set(joint->getScale() - mBaseScale);
+
+            return newPublicRot *= ~initalPublicRot;
+        }
+
+      private:
+        FSJointState(FSJointState* state)
+        {
+            mStartingRotation.set(state->mStartingRotation);
+            mBaseRotation.set(state->mBaseRotation);
+            mBasePosition.set(state->mBasePosition);
+            mBaseScale.set(state->mBaseScale);
+
+            mRotation.set(state->mRotation);
+            mPosition.set(state->mPosition);
+            mScale.set(state->mScale);
+            mUserSpecifiedBaseZero = state->mUserSpecifiedBaseZero;
+            mRotationIsWorldLocked = state->mRotationIsWorldLocked;
+        }
+
+      public:
+        LLQuaternion mRotation;
+        LLVector3    mPosition;
+        LLVector3    mScale;
+        bool         mRotationIsWorldLocked = false;
+
+        /// <summary>
+        /// A value indicating whether the user has explicitly set the base rotation to zero.
+        /// </summary>
+        /// <remarks>
+        /// The base-rotation, representing any 'current animation' state when posing starts, may become zero for several reasons.
+        /// Loading a Pose, editing a rotation intended to save to BVH, or setting to 'T-Pose' being examples.
+        /// If a user intends on creating a BVH, zero-rotation has a special meaning upon upload: the joint is free (is not animated by that BVH).
+        /// This value represents the explicit intent to have that joint be 'free' in BVH (which is sometimes undesireable).
+        /// </remarks>
+        bool mUserSpecifiedBaseZero = false;
+
+      private:
+        LLQuaternion mStartingRotation;
+        LLQuaternion mBaseRotation;
+        LLVector3    mBasePosition;
+        LLVector3    mBaseScale;
     };
 
-private:
+  private:
     std::string             mJointName = "";  // expected to be a match to LLJoint.getName() for a joint implementation.
     LLPointer<LLJointState> mJointState{ nullptr };
 
@@ -223,32 +330,15 @@ private:
     /// </summary>
     bool mIsCollisionVolume{ false };
 
-    FSJointRotation                       mRotation;
-    std::deque<FSJointRotation>           mLastSetRotationDeltas;
-    size_t                                mUndoneRotationIndex     = 0;
-    std::chrono::system_clock::time_point mTimeLastUpdatedRotation = std::chrono::system_clock::now();
+    std::deque<FSJointState>              mLastSetJointStates;
+    size_t                                mUndoneJointStatesIndex      = 0;
+    std::chrono::system_clock::time_point mTimeLastUpdatedCurrentState = std::chrono::system_clock::now();
 
-    LLVector3                             mPositionDelta;
-    LLVector3                             mBeginningPosition;
-    std::deque<LLVector3>                 mLastSetPositionDeltas;
-    size_t                                mUndonePositionIndex     = 0;
-    std::chrono::system_clock::time_point mTimeLastUpdatedPosition = std::chrono::system_clock::now();
+    FSJointState mCurrentState;
 
-    /// <summary>
-    /// Joint scales require special treatment, as they do not revert when we stop animating an avatar.
-    /// </summary>
-    LLVector3                             mScaleDelta;
-    LLVector3                             mBeginningScale;
-    std::deque<LLVector3>                 mLastSetScaleDeltas;
-    size_t                                mUndoneScaleIndex     = 0;
-    std::chrono::system_clock::time_point mTimeLastUpdatedScale = std::chrono::system_clock::now();
-
-    template <typename T>
-    void addToUndo(T delta, size_t* undoIndex, std::deque<T>* dequeue, std::chrono::system_clock::time_point* timeLastUpdated);
-
-    template <typename T> T undoLastChange(T thingToSet, size_t* undoIndex, std::deque<T>* dequeue);
-
-    template <typename T> T redoLastChange(T thingToSet, size_t* undoIndex, std::deque<T>* dequeue);
+    void addStateToUndo(FSJointState stateToAddToUndo);
+    FSJointState undoLastStateChange(FSJointState currentState);
+    FSJointState redoLastStateChange(FSJointState currentState);
 };
 
 #endif // FS_JOINTPPOSE_H

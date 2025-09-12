@@ -2531,6 +2531,21 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
     EInstantMessage dialog = (EInstantMessage)d;
     LLHost sender = msg->getSender();
 
+    LLSD metadata;
+    if (msg->getNumberOfBlocksFast(_PREHASH_MetaData) > 0)
+    {
+        S32 metadata_size = msg->getSizeFast(_PREHASH_MetaData, 0, _PREHASH_Data);
+        std::string metadata_buffer;
+        metadata_buffer.resize(metadata_size, 0);
+
+        msg->getBinaryDataFast(_PREHASH_MetaData, _PREHASH_Data, &metadata_buffer[0], metadata_size, 0, metadata_size );
+        std::stringstream metadata_stream(metadata_buffer);
+        if (LLSDSerialize::fromBinary(metadata, metadata_stream, metadata_size) == LLSDParser::PARSE_FAILURE)
+        {
+            metadata.clear();
+        }
+    }
+
     LLIMProcessing::processNewMessage(from_id,
         from_group,
         to_id,
@@ -2545,7 +2560,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
         position,
         binary_bucket,
         binary_bucket_size,
-        sender);
+        sender,
+        metadata);
 }
 
 void send_do_not_disturb_message (LLMessageSystem* msg, const LLUUID& from_id, const LLUUID& session_id)
@@ -3331,6 +3347,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
             msg_notify["session_id"] = LLUUID();
             msg_notify["from_id"] = chat.mFromID;
             msg_notify["source_type"] = chat.mSourceType;
+            // used to check if there is agent mention in the message
+            msg_notify["message"] = mesg;
             on_new_message(msg_notify);
         }
 
@@ -3911,6 +3929,11 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
         }
     }
 
+#ifdef LL_DISCORD
+    if (gSavedSettings.getBOOL("EnableDiscord"))
+        LLAppViewer::updateDiscordActivity();
+#endif
+
     if ( LLTracker::isTracking(NULL) )
     {
         // Check distance to beacon, if < 5m, remove beacon
@@ -4064,7 +4087,9 @@ void send_agent_update(bool force_send, bool send_reliable)
     LL_PROFILE_ZONE_SCOPED;
     llassert(!gCubeSnapshot);
 
-    if (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+    LLAgent::ETeleportState tp_state = gAgent.getTeleportState();
+    if (tp_state != LLAgent::TELEPORT_NONE
+        && tp_state != LLAgent::TELEPORT_ARRIVING)
     {
         // We don't care if they want to send an agent update, they're not allowed
         // until the target simulator is ready to receive them
@@ -4089,6 +4114,7 @@ void send_agent_update(bool force_send, bool send_reliable)
 
     static F64          last_send_time = 0.0;
     static U32          last_control_flags = 0;
+    static bool         control_flags_follow_up = false;
     static U8           last_render_state = 0;
     static U8           last_flags = AU_FLAGS_NONE;
     static LLQuaternion last_body_rot,
@@ -4161,6 +4187,20 @@ void send_agent_update(bool force_send, bool send_reliable)
 
             // check flags
             if (last_flags != flags)
+            {
+                send_update = true;
+                break;
+            }
+
+            // example:
+            // user taps crouch (control_flags 4128), viewer sends 4128 then immediately 0
+            // server starts crouching motion but does not stop it, only once viewer sends 0
+            // second time will server stop the motion. follow_up exists to make sure all
+            // states like 'crouch' motion are properly cleared server side.
+            //
+            // P.S. Server probably shouldn't require a reminder to stop a motion,
+            // but at the moment it does.
+            if (control_flags_follow_up)
             {
                 send_update = true;
                 break;
@@ -4242,7 +4282,36 @@ void send_agent_update(bool force_send, bool send_reliable)
     msg->addVector3Fast(_PREHASH_CameraAtAxis, camera_at);
     msg->addVector3Fast(_PREHASH_CameraLeftAxis, LLViewerCamera::getInstance()->getLeftAxis());
     msg->addVector3Fast(_PREHASH_CameraUpAxis, LLViewerCamera::getInstance()->getUpAxis());
-    msg->addF32Fast(_PREHASH_Far, gAgentCamera.mDrawDistance);
+
+    static F32 last_draw_disatance_step = 1024;
+    if (tp_state == LLAgent::TELEPORT_ARRIVING || LLStartUp::getStartupState() < STATE_MISC)
+    {
+        // Inform interest list, prioritize closer area.
+        // Reason: currently server doesn't distance sort attachments, by restricting range
+        // we reduce the number of attachments sent to the viewer, thus prioritizing
+        // closer ones.
+        // Todo: revise and remove once server gets distance sorting.
+        last_draw_disatance_step = llmax((F32)(gAgentCamera.mDrawDistance / 2.f), 50.f);
+        msg->addF32Fast(_PREHASH_Far, last_draw_disatance_step);
+    }
+    else if (last_draw_disatance_step < gAgentCamera.mDrawDistance)
+    {
+        static LLFrameTimer last_step_time;
+        if (last_step_time.getElapsedTimeF32() > 1.f)
+        {
+            // gradually increase draw distance
+            // Idealy this should be not per second, but based on how loaded
+            // mesh thread is, but hopefully this is temporary.
+            last_step_time.reset();
+            F32 step = gAgentCamera.mDrawDistance * 0.1f;
+            last_draw_disatance_step = llmin(last_draw_disatance_step + step, gAgentCamera.mDrawDistance);
+        }
+        msg->addF32Fast(_PREHASH_Far, last_draw_disatance_step);
+    }
+    else
+    {
+        msg->addF32Fast(_PREHASH_Far, gAgentCamera.mDrawDistance);
+    }
 
     msg->addU32Fast(_PREHASH_ControlFlags, control_flags);
 
@@ -4270,6 +4339,7 @@ void send_agent_update(bool force_send, bool send_reliable)
 
     // remember last update data
     last_send_time = now;
+    control_flags_follow_up = last_control_flags != control_flags;
     last_control_flags = control_flags;
     last_render_state = render_state;
     last_flags = flags;
@@ -4556,7 +4626,7 @@ void process_kill_object(LLMessageSystem *mesgsys, void **user_data)
             gObjectList.killObject(objectp);
         }
 
-        if(delete_object)
+        if(delete_object && regionp)
         {
             regionp->killCacheEntry(local_id);
         }
@@ -4651,6 +4721,38 @@ void process_time_synch(LLMessageSystem *mesgsys, void **user_data)
     (void)sun_direction, (void)moon_direction, (void)phase;
 }
 
+// <FS> Sound blacklist
+static bool is_sound_blacklisted(const LLUUID& sound_id, const LLUUID& object_id, const LLUUID& owner_id)
+{
+    FSAssetBlacklist& blacklist = FSAssetBlacklist::instance();
+
+    if (blacklist.isBlacklisted(sound_id, LLAssetType::AT_SOUND))
+    {
+        return true;
+    }
+    else if (object_id == owner_id)
+    {
+        // Gesture sound
+        return blacklist.isBlacklisted(owner_id, LLAssetType::AT_SOUND, FSAssetBlacklist::eBlacklistFlag::GESTURE);
+    }
+    else if (LLViewerObject* object = gObjectList.findObject(object_id))
+    {
+        if (object->isAttachment())
+        {
+            // Attachment sound
+            return blacklist.isBlacklisted(owner_id, LLAssetType::AT_SOUND, FSAssetBlacklist::eBlacklistFlag::WORN);
+        }
+        else
+        {
+            // Rezzed object sound
+            return blacklist.isBlacklisted(owner_id, LLAssetType::AT_SOUND, FSAssetBlacklist::eBlacklistFlag::REZZED);
+        }
+    }
+
+    return false;
+}
+// </FS>
+
 void process_sound_trigger(LLMessageSystem *msg, void **)
 {
     if (!gAudiop)
@@ -4679,10 +4781,8 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
     // </FS:ND>
 
     // <FS> Asset blacklist
-    if (FSAssetBlacklist::getInstance()->isBlacklisted(sound_id, LLAssetType::AT_SOUND))
-    {
+    if (is_sound_blacklisted(sound_id, object_id, owner_id))
         return;
-    }
     // </FS>
 
     // NaCl - Antispam Registry
@@ -4788,11 +4888,14 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_ObjectID, object_id);
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_OwnerID, owner_id);
 
-    // <FS> Asset blacklist
-    if (FSAssetBlacklist::getInstance()->isBlacklisted(sound_id, LLAssetType::AT_SOUND))
-    {
+    // <FS:ND> Protect against corrupted sounds
+    if (gAudiop->isCorruptSound(sound_id))
         return;
-    }
+    // </FS:ND>
+
+    // <FS> Asset blacklist
+    if (is_sound_blacklisted(sound_id, object_id, owner_id))
+        return;
     // </FS>
 
     // NaCl - Antispam Registry
@@ -4804,12 +4907,7 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
     }
     // NaCl End
 
-    // <FS:ND> Protect against corrupted sounds
-    if( gAudiop->isCorruptSound( sound_id ) )
-        return;
-    // </FS:ND>
-
-    LLViewerObject *objectp = gObjectList.findObject(object_id);
+    LLViewerObject* objectp = gObjectList.findObject(object_id);
     if (!objectp) return;
 
     if (LLMuteList::getInstance()->isMuted(object_id)) return;
@@ -4845,11 +4943,14 @@ void process_attached_sound(LLMessageSystem *msg, void **user_data)
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_ObjectID, object_id);
     msg->getUUIDFast(_PREHASH_DataBlock, _PREHASH_OwnerID, owner_id);
 
-    // <FS> Asset blacklist
-    if (FSAssetBlacklist::getInstance()->isBlacklisted(sound_id, LLAssetType::AT_SOUND))
-    {
+    // <FS:ND> Protect against corrupted sounds
+    if (gAudiop->isCorruptSound(sound_id))
         return;
-    }
+    // </FS:ND>
+
+    // <FS> Asset blacklist
+    if (is_sound_blacklisted(sound_id, object_id, owner_id))
+        return;
     // </FS>
 
     // NaCl - Antispam Registry
@@ -6320,6 +6421,7 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
                                         false, //UI
                                         gSavedSettings.getBOOL("RenderHUDInSnapshot"),
                                         false,
+                                        false,
                                         LLSnapshotModel::SNAPSHOT_TYPE_COLOR,
                                         LLSnapshotModel::SNAPSHOT_FORMAT_PNG);
         }
@@ -6377,23 +6479,6 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
             return true;
         }
         // </FS:Ansariel>
-// <FS:CR> FIRE-9696 - Moved detection of HomePositionSet Alert hack to here where it's actually found now
-        if (notificationID == "HomePositionSet")
-        {
-            // save the home location image to disk
-            std::string snap_filename = gDirUtilp->getLindenUserDir();
-            snap_filename += gDirUtilp->getDirDelimiter();
-            snap_filename += LLStartUp::getScreenHomeFilename();
-            if (gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), false, gSavedSettings.getBOOL("RenderHUDInSnapshot"), false, LLSnapshotModel::SNAPSHOT_TYPE_COLOR, LLSnapshotModel::SNAPSHOT_FORMAT_PNG))
-            {
-                LL_INFOS() << LLStartUp::getScreenHomeFilename() << " saved successfully." << LL_ENDL;
-            }
-            else
-            {
-                LL_WARNS() << LLStartUp::getScreenHomeFilename() << " could not be saved." << LL_ENDL;
-            }
-        }
-// </FS:CR>
 
         // Special Marketplace update notification
         if (notificationID == "SLM_UPDATE_FOLDER")
@@ -6461,6 +6546,7 @@ static void process_special_alert_messages(const std::string & message)
                                     gViewerWindow->getWindowHeightRaw(),
                                     false,
                                     gSavedSettings.getBOOL("RenderHUDInSnapshot"),
+                                    false,
                                     false,
                                     LLSnapshotModel::SNAPSHOT_TYPE_COLOR,
                                     LLSnapshotModel::SNAPSHOT_FORMAT_PNG);
@@ -6640,6 +6726,7 @@ void process_alert_core(const std::string& message, bool modal)
         if (text.substr(0, restart_cancelled.length()) == restart_cancelled)
         {
             LLFloaterRegionRestarting::close();
+            fs_report_region_restart_to_channel(-1); // <FS:Darl> Announce region restart to a defined chat channel
         }
 
             std::string new_msg =LLNotifications::instance().getGlobalString(text);
@@ -8392,7 +8479,6 @@ void process_initiate_download(LLMessageSystem* msg, void**)
         (void**)new std::string(viewer_filename));
 }
 
-
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
     if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
@@ -8406,6 +8492,11 @@ void process_script_teleport_request(LLMessageSystem* msg, void**)
     msg->getString("Data", "SimName", sim_name);
     msg->getVector3("Data", "SimPosition", pos);
     msg->getVector3("Data", "LookAt", look_at);
+    U32 flags = (BEACON_SHOW_MAP | BEACON_FOCUS_MAP);
+    if (msg->has("Options"))
+    {
+        msg->getU32("Options", "Flags", flags);
+    }
 
     LLFloaterWorldMap* instance = LLFloaterWorldMap::getInstance();
     if(instance)
@@ -8416,7 +8507,16 @@ void process_script_teleport_request(LLMessageSystem* msg, void**)
             << LL_ENDL;
 
         instance->trackURL(sim_name, (S32)pos.mV[VX], (S32)pos.mV[VY], (S32)pos.mV[VZ]);
-        LLFloaterReg::showInstance("world_map", "center");
+        // <FS:PP> FIRE-35747 Do not ignore @showworldmap=n for llMapDestination() [RLVa v2.4.2, 2025-09-11]
+        // if (flags & BEACON_SHOW_MAP)
+        if (flags & BEACON_SHOW_MAP && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWWORLDMAP))
+        // </FS:PP>
+        {
+            bool old_auto_focus = instance->getAutoFocus();
+            instance->setAutoFocus(flags & BEACON_FOCUS_MAP);
+            instance->openFloater("center");
+            instance->setAutoFocus(old_auto_focus);
+        }
     }
 
     // remove above two lines and replace with below line
@@ -8698,7 +8798,14 @@ void fs_report_region_restart_to_channel(S32 seconds)
         msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
         msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
         msg->nextBlockFast(_PREHASH_ChatData);
-        msg->addStringFast(_PREHASH_Message, "region_restart_in:" + llformat("%d", seconds));
+        if(seconds >= 0)
+        {
+            msg->addStringFast(_PREHASH_Message, "region_restart_in:" + llformat("%d", seconds));
+        }
+        else // Input is a negative number
+        {
+            msg->addStringFast(_PREHASH_Message, "region_restart_cancelled");
+        }
         msg->addU8Fast(_PREHASH_Type, CHAT_TYPE_WHISPER);
         msg->addS32("Channel", channel);
         gAgent.sendReliableMessage();

@@ -119,9 +119,18 @@ public:
     bool allStartingRotationsAreZero() const;
 
     /// <summary>
-    /// Sets all of the non-Collision Volume rotations to zero.
+    /// Sets all of the non-Collision Volume base-and-delta rotations to zero, and clears the undo/redo queue.
     /// </summary>
-    void setAllRotationsToZero();
+    /// <remarks>
+    /// By default, sets the joint to lock in BVH export.
+    /// </remarks>
+    void setAllRotationsToZeroAndClearUndo();
+
+    /// <summary>
+    /// Sets the BVH export state for the supplied joint.
+    /// </summary>
+    /// <param name="lockInBvh">Whether the joint should be locked if exported to BVH.</param>
+    void setJointBvhLock(FSJointPose* joint, bool lockInBvh);
 
 private:
     /// <summary>
@@ -133,7 +142,7 @@ private:
     /// This takes advantage of how the actual vector migrates to equality with the target vector.
     /// Certain physics settings (bouncing whatnots) account for some longer term work, but as this is applied per joint, it tends to reduce a lot of work.
     /// </remarks>
-    const F32 closeEnough = 1e-6;
+    const F32 closeEnough = 1e-6f; // <FS:minerjr> add missing f for float
 
     /// <summary>
     /// The kind of joint state this animation is concerned with changing.

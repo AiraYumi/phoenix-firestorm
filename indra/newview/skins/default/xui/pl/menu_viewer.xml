@@ -33,7 +33,7 @@
 			<menu_item_call label="Odłącz wszystko" name="Detach All" />
 		</menu>
 		<menu_item_call label="Usuń wybrane dodatki" name="Remove Selected Attachments" />
-		<menu_item_call label="Biblioteka awatarów" name="Avatar Picker"/>
+		<menu_item_call label="Paczka powitalna awatarów" name="Avatar Welcome Pack"/>
 		<menu_item_call label="Uniesienie" name="HoverHeight" />
 		<menu label="Ruch" name="Movement">
 			<menu_item_call label="Usiądź" name="Sit Down Here"/>
@@ -166,6 +166,7 @@
 			<menu_item_call label="Narzędzia fotograficzne" name="phototools_item_call"/>
 			<menu_item_call label="Fotograf: kamera" name="cameratools_item_call"/>
 			<menu_item_check label="Blokada głębi ostrości dla skupienia" name="lock_focus_point" />
+			<menu_item_check label="Celownik myszki w głębi ostrości" name="render_focus_point" />
 		</menu>
 		<menu_item_call label="Przeszukiwanie obszaru" name="area_search"/>
 		<menu_item_call label="Eksplorator dźwięków" name="Sound Explorer"/>
@@ -173,7 +174,7 @@
 		<menu_item_call label="Czarna lista zasobów danych (assetów)" name="asset_blacklist"/>
 		<menu_item_call label="Ustawienia renderowania awatarów" name="Avatar Render Settings"/>
 		<menu label="Render awatarów" name="AvatarComplexityMode">
-			<menu_item_check label="Ogranicz po złożonośći" name="complexity_limit_everone" />
+			<menu_item_check label="Ogranicz po złożoności" name="complexity_limit_everone" />
 			<menu_item_check label="Zawsze pokazuj znajomych" name="complexity_always_show_friends" />
 			<menu_item_check label="Pokazuj tylko znajomych" name="complexity_only_show_friends" />
 		</menu>
@@ -248,6 +249,13 @@
 			<menu_item_check label="Pokaż przezroczyste obiekty" name="Highlight Transparent" />
 			<menu_item_check label="- Pokaż riggowaną przezroczystość" name="Include Transparent Rigged" />
 			<menu_item_check label="Bez obróbki końcowej" name="No Post" />
+			<menu label="Poziom szczegółów zaznaczenia" name="Selection level of detail">
+				<menu_item_check label="Domyślny" name="Default lod setting" />
+				<menu_item_check label="Wysoki" name="High lod setting" />
+				<menu_item_check label="Średni" name="Medium lod setting" />
+				<menu_item_check label="Niski" name="Low lod setting" />
+				<menu_item_check label="Najniższy" name="Lowest lod setting" />
+			</menu>
 			<menu_item_check label="Przyciągaj do siatki" name="Snap to Grid"/>
 			<menu_item_call label="Przeciągnij obiekt XY do siatki" name="Snap Object XY to Grid"/>
 			<menu_item_call label="Wybierz zaznaczenie siatki" name="Use Selection for Grid"/>
@@ -274,6 +282,7 @@
 		<menu_item_call label="Biblioteka skryptów" name="Script Library"/>
 		<menu_item_call label="Społeczność SL (blogi, fora, aktualności)" name="SL Community Pages"/>
 		<menu_item_call label="Blog Firestorma" name="Firestorm Blog"/>
+		<menu_item_call label="Primfeed Firestorma" name="Firestorm Primfeed" />
 		<menu_item_call label="Flickr Firestorma" name="Firestorm Flickr"/>
 		<menu_item_call label="Kanał YouTube Firestorma" name="Firestorm YouTube"/>
 		<menu_item_call label="Twitter Firestorma" name="Firestorm Twitter"/>
@@ -296,7 +305,6 @@
 		<menu_item_call label="Wiki informacyjna" name="Wiki"/>
 		<menu_item_call label="Forum społecznościowe" name="Community Forums"/>
 		<menu_item_call label="Portal wsparcia" name="Support portal"/>
-		<menu_item_call label="Newsy: [SECOND_LIFE]" name="Second Life News"/>
 		<menu_item_call label="Blogi: [SECOND_LIFE]" name="Second Life Blogs"/> -->
 		<menu_item_call name="whitelist_folders" label="Doradca wykluczeń" />
 		<menu_item_check label="Sprawdź stan świata" name="Grid Status"/>
@@ -463,7 +471,10 @@
 			<menu_item_call label="Wymuś wyjątek programu" name="Force Software Exception"/>
 			<menu_item_call label="Wymuś wyjątek systemu operacyjnego" name="Force OS Exception" />
 			<menu_item_call label="Wymuś wyjątek we współprogramie (coroutine)" name="Force Software Exception in Coroutine" />
-			<menu_item_call label="Wymuś awarię w wątku" name="Force a Crash in a Thread" />
+			<menu_item_call label="Wymuś wyjątek w koroprocedurze" name="Force a Crash in a Coroprocedure" />
+			<menu_item_call label="Wymuś wyjątek w kolejce roboczej" name="Force a Crash in a Work Queue" />
+			<menu_item_call label="Wymuś awarię LLError w wątku" name="Force an LLError Crash in a Thread" />
+			<menu_item_call label="Wymuś awarię - wyjątek w wątku" name="Force an Exception Crash in a Thread" />
 			<menu_item_call label="Wymuś rozłączenie Przeglądarki" name="Force Disconnect Viewer"/>
 			<menu_item_call label="Symulacja wycieku pamięci" name="Memory Leaking Simulation"/>
 		</menu>
@@ -534,6 +545,7 @@
 			<menu_item_check label="Maksymalna rozdzielczość tekstur (niebezpieczne)" name="Full Res Textures"/>
 			<menu_item_check label="Renderowania przyłączonego światła" name="Render Attached Lights"/>
 			<menu_item_check label="Renderowanie przyłączonych cząsteczek" name="Render Attached Particles"/>
+			<menu_item_check label="Zmniejsz pole widzenia, gdy VRAM jest pełny" name="Reduce Draw Distance when VRAM is full" />
 			<menu_item_check label="Zbierz Vertex Buffer czcionek" name="Collect Font Vertex Buffers" />
 			<menu_item_check label="Pamięć podręczna modułu cieniującego" name="Enable Shader Cache" />
 			<menu_item_call label="Wyczyść pamięć podręczną modułu cieniującego" name="Shader Cache Clear" />
@@ -603,6 +615,7 @@
 			<menu_item_call label="Pokaż ustawienia kolorów" name="Color Settings" />
 			<menu_item_call label="Przeładuj ustawienia koloru" name="Reload Color Settings"/>
 			<menu_item_call label="Pokaż test czcionki" name="Show Font Test"/>
+			<menu_item_call label="Pokaż test SLapps" name="Show SLapps Test" />
 			<menu_item_call label="Wczytaj z XML" name="Load from XML"/>
 			<menu_item_call label="Zapisz do XML" name="Save to XML"/>
 			<menu_item_check label="Pokaż nazwy XUI" name="Show XUI Names"/>
@@ -655,6 +668,8 @@
 		<menu_item_check label="Szafa przez HTTP" name="HTTP Inventory"/>
 		<menu_item_call label="Kompresuj obrazki" name="Compress Images"/>
 		<menu_item_call label="Test kompresji pliku" name="Compress File Test" />
+		<menu_item_call label="Test uwierzytelniania Primfeed" name="primfeed_auth_test" />
+		<menu_item_call label="Reset uwierzytelniania Primfeed" name="primfeed_auth_clear" />
 		<menu_item_call label="Włącz wizualny detektor wycieków pamięci" name="Enable Visual Leak Detector"/>
 		<menu_item_check label="Mały zrzut wyjścia debugowania" name="Output Debug Minidump"/>
 		<menu_item_check label="Aktywacja okna konsoli podczas następnego uruchomienia" name="Console Window"/>
@@ -668,6 +683,7 @@
 		<menu_item_call label="Zażądaj statusu administratora" name="Request Admin Options"/>
 		<menu_item_call label="Porzuć status administratora" name="Leave Admin Options"/>
 		<menu_item_check label="Pokaż menu administratora" name="View Admin Options"/>
+		<menu label="Zrzuć" name="Dump" />
 	</menu>
 	<menu label="Administrator" name="Admin">
 		<menu label="Obiekt" name="AdminObject">

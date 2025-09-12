@@ -355,8 +355,11 @@ public:
     U8 getCentralBakeVersion() { return mCentralBakeVersion; }
 
     void getInfo(LLSD& info);
-
+// <FS:Beq> FIRE-35602 etc - Mesh not appearing after TP/login (opensim only)    
+#ifdef OPENSIM
     bool meshRezEnabled() const;
+#endif // OPENSIM
+// </FS:Beq>
     bool meshUploadEnabled() const;
 
     bool bakesOnMeshEnabled() const;
@@ -377,7 +380,7 @@ public:
 
 // </FS:CR>
 #ifdef OPENSIM
-    std::set<std::string> getGods() { return mGodNames; };
+    const std::set<std::string, std::less<>>& getGods() const { return mGodNames; };
 #endif // OPENSIM
 // </FS:CR>
 
@@ -621,7 +624,7 @@ public:
 
     // <FS:CR> Opensim region capabilities
 #ifdef OPENSIM
-    std::set<std::string> mGodNames;
+    std::set<std::string, std::less<>> mGodNames;
 #endif
     // </FS:CR>
 

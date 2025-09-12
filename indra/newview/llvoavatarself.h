@@ -90,11 +90,9 @@ public:
     /*virtual*/ bool        hasMotionFromSource(const LLUUID& source_id);
     /*virtual*/ void        stopMotionFromSource(const LLUUID& source_id);
     /*virtual*/ void        requestStopMotion(LLMotion* motion);
+    /*virtual*/ LLJoint*    getJoint(std::string_view name);
 
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-//  /*virtual*/ LLJoint*    getJoint( const std::string &name );
-    /*virtual*/ LLJoint*    getJoint( const JointKey &name );
-// </FS:ND>
+    /*virtual*/ void renderJoints();
 
     // <FS:Ansariel> [Legacy Bake]
     ///*virtual*/ bool setVisualParamWeight(const LLVisualParam *which_param, F32 weight);
@@ -122,6 +120,8 @@ private:
     //bool setParamWeight(const LLViewerVisualParam *param, F32 weight);
     bool setParamWeight(const LLViewerVisualParam *param, F32 weight, bool upload_bake = false);
 
+    std::mutex          mJointMapMutex; // getJoint gets used from mesh thread
+
 /********************************************************************************
  **                                                                            **
  **                    STATE
@@ -144,7 +144,7 @@ public:
     // Loading state
     //--------------------------------------------------------------------
 public:
-    /*virtual*/ bool    getIsCloud() const;
+    /*virtual*/ bool    getHasMissingParts() const;
 
     //--------------------------------------------------------------------
     // Region state

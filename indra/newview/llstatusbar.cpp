@@ -122,26 +122,28 @@ LLViewerRegion* agent_region;
 bool bakingStarted = false;
 
 class LORebakeStuck;
-LORebakeStuck *bakeTimeout = NULL;
+LORebakeStuck* bakeTimeout = nullptr;
 
 class LORebakeStuck: public LLEventTimer
 {
 public:
-    LORebakeStuck(LLStatusBar *bar) : LLEventTimer(30.0f)
+    LORebakeStuck(LLStatusBar *bar) : LLEventTimer(30.0f), mBar(bar)
     {
-        mbar=bar;
     }
+
     ~LORebakeStuck()
     {
-        bakeTimeout=NULL;
+        bakeTimeout = nullptr;
     }
+
     bool tick()
     {
-        mbar->setRebakeStuck(true);
+        mBar->setRebakeStuck(true);
         return true;
     }
+
 private:
-    LLStatusBar *mbar;
+    LLStatusBar* mBar;
 };
 // </FS:LO>
 
@@ -183,6 +185,8 @@ LLStatusBar::LLStatusBar(const LLRect& rect)
     mBtnVolume(NULL),
     mBoxBalance(NULL),
     mBalance(0),
+    mBalanceClicked(false),
+    mObscureBalance(false),
     mHealth(100),
     mShowParcelIcons(true),
     mSquareMetersCredit(0),
@@ -207,9 +211,6 @@ LLStatusBar::LLStatusBar(const LLRect& rect)
     // status bar can possible overlay menus?
     setMouseOpaque(false);
 
-    mBalanceTimer = new LLFrameTimer();
-    mHealthTimer = new LLFrameTimer();
-
     LLUICtrl::CommitCallbackRegistry::currentRegistrar()
             .add("TopInfoBar.Action", boost::bind(&LLStatusBar::onContextMenuItemClicked, this, _2));
 
@@ -223,12 +224,6 @@ LLStatusBar::LLStatusBar(const LLRect& rect)
 
 LLStatusBar::~LLStatusBar()
 {
-    delete mBalanceTimer;
-    mBalanceTimer = NULL;
-
-    delete mHealthTimer;
-    mHealthTimer = NULL;
-
     if (mParcelChangedObserver)
     {
         LLViewerParcelMgr::getInstance()->removeObserver(mParcelChangedObserver);
@@ -304,7 +299,8 @@ bool LLStatusBar::postBuild()
     //getChild<LLUICtrl>("goShop")->setCommitCallback(boost::bind(&LLWeb::loadURL, gSavedSettings.getString("MarketplaceURL"), LLStringUtil::null, LLStringUtil::null));
 
     mBoxBalance = getChild<LLTextBox>("balance");
-    mBoxBalance->setClickedCallback( &LLStatusBar::onClickBalance, this );
+    mBoxBalance->setClickedCallback(&LLStatusBar::onClickRefreshBalance, this);
+    //mBoxBalance->setDoubleClickCallback([this](LLUICtrl*, S32 x, S32 y, MASK mask) { onClickToggleBalance(); }); // <FS:Ansariel> Prefer custom FS balance hiding method
 
     mIconPresetsCamera = getChild<LLButton>( "presets_icon_camera" );
     //mIconPresetsCamera->setMouseEnterCallback(boost::bind(&LLStatusBar::mIconPresetsCamera, this));
@@ -354,6 +350,8 @@ bool LLStatusBar::postBuild()
     gSavedSettings.getControl("MuteAudio")->getSignal()->connect(boost::bind(&LLStatusBar::onVolumeChanged, this, _2));
     // <FS:Ansariel> Fix LL voice disabled on 2nd instance nonsense
     //gSavedSettings.getControl("EnableVoiceChat")->getSignal()->connect(boost::bind(&LLStatusBar::onVoiceChanged, this, _2));
+    // <FS:Ansariel> Prefer custom FS balance hiding method
+    //gSavedSettings.getControl("ObscureBalanceInStatusBar")->getSignal()->connect(boost::bind(&LLStatusBar::onObscureBalanceChanged, this, _2));
 
     //if (!gSavedSettings.getBOOL("EnableVoiceChat") && LLAppViewer::instance()->isSecondInstance())
     //{
@@ -361,6 +359,7 @@ bool LLStatusBar::postBuild()
     //    mBtnVolume->setImageUnselected(LLUI::getUIImage("VoiceMute_Off"));
     //}
     // </FS:Ansariel>
+    //mObscureBalance = gSavedSettings.getBOOL("ObscureBalanceInStatusBar"); // <FS:Ansariel> Prefer custom FS balance hiding method
 
     // <FS:Ansariel> FIRE-19697: Add setting to disable graphics preset menu popup on mouse over
     gSavedSettings.getControl("FSStatusBarMenuButtonPopupOnRollover")->getSignal()->connect(boost::bind(&LLStatusBar::onPopupRolloverChanged, this, _2));
@@ -604,44 +603,48 @@ void LLStatusBar::refresh()
     static LLCachedControl<bool> fsStatusBarShowFPS(gSavedSettings, "FSStatusBarShowFPS");
     if (fsStatusBarShowFPS && mFPSUpdateTimer.getElapsedTimeF32() > 1.f)
     {
+        static LLCachedControl<bool> fsStatusBarShowFPSColors(gSavedSettings, "FSStatusBarShowFPSColors");
         static LLCachedControl<U32>  max_fps(gSavedSettings, "FramePerSecondLimit");
         static LLCachedControl<bool> limit_fps_enabled(gSavedSettings, "FSLimitFramerate");
         static LLCachedControl<bool> vsync_enabled(gSavedSettings, "RenderVSyncEnable");
 
-        static const auto fps_below_limit_color     = LLUIColorTable::instance().getColor("Yellow");
-        static const auto fps_limit_reached_color   = LLUIColorTable::instance().getColor("Green");
-        static const auto vsync_limit_reached_color = LLUIColorTable::instance().getColor("Green");
-        static const auto fps_uncapped_color        = LLUIColorTable::instance().getColor("White");
-        static const auto fps_unfocussed_color      = LLUIColorTable::instance().getColor("Gray");
+        static const auto fps_below_limit_color     = LLUIColorTable::instance().getColor("FpsDisplayBelowLimitColor");
+        static const auto fps_limit_reached_color   = LLUIColorTable::instance().getColor("FpsDisplayFpsLimitReachedColor");
+        static const auto vsync_limit_reached_color = LLUIColorTable::instance().getColor("FpsDisplayVSyncLimitReachedColor");
+        static const auto fps_uncapped_color        = LLUIColorTable::instance().getColor("FpsDisplayUncappedColor");
+        static const auto fps_unfocussed_color      = LLUIColorTable::instance().getColor("FpsDisplayUnfocussedColor");
         static auto       current_fps_color         = fps_uncapped_color;
 
         mFPSUpdateTimer.reset();
         const auto fps = LLTrace::get_frame_recording().getPeriodMedianPerSec(LLStatViewer::FPS);
         mFPSText->setText(llformat("%.1f", fps));
 
-        // if background, go grey, else go white unless we have a cap (checked next)
         auto fps_color{ fps_uncapped_color };
-        auto window = gViewerWindow ? gViewerWindow->getWindow() : nullptr;
-        if ((window && !window->getVisible()) || !gFocusMgr.getAppHasFocus())
+        if (fsStatusBarShowFPSColors)
         {
-            fps_color = fps_unfocussed_color;
-        }
-        else
-        {
-            S32 vsync_freq{ -1 };
-            if (window)
+            // if background, go grey, else go white unless we have a cap (checked next)
+            auto window = gViewerWindow ? gViewerWindow->getWindow() : nullptr;
+            if ((window && !window->getVisible()) || !gFocusMgr.getAppHasFocus())
             {
-                vsync_freq = window->getRefreshRate();
+                fps_color = fps_unfocussed_color;
             }
+            else
+            {
+                S32 vsync_freq{ -1 };
+                if (window)
+                {
+                    vsync_freq = window->getRefreshRate();
+                }
 
-            if (limit_fps_enabled && max_fps > 0)
-            {
-                fps_color = (fps >= max_fps - 1) ? fps_limit_reached_color : fps_below_limit_color;
-            }
-            // use vsync if enabled and the freq is lower than the max_fps
-            if (vsync_enabled && vsync_freq > 0 && (!limit_fps_enabled || vsync_freq < (S32)max_fps))
-            {
-                fps_color = (fps >= vsync_freq - 1) ? vsync_limit_reached_color : fps_below_limit_color;
+                if (limit_fps_enabled && max_fps > 0)
+                {
+                    fps_color = (fps >= max_fps - 1) ? fps_limit_reached_color : fps_below_limit_color;
+                }
+                // use vsync if enabled and the freq is lower than the max_fps
+                if (vsync_enabled && vsync_freq > 0 && (!limit_fps_enabled || vsync_freq < (S32)max_fps))
+                {
+                    fps_color = (fps >= vsync_freq - 1) ? vsync_limit_reached_color : fps_below_limit_color;
+                }
             }
         }
 
@@ -680,6 +683,12 @@ void LLStatusBar::refresh()
 
         updateClockDisplay();
         // </FS:Zi>
+    }
+
+    if (mBalanceClicked && mBalanceClickTimer.getElapsedTimeF32() > 1.f)
+    {
+        mBalanceClicked = false;
+        sendMoneyBalanceRequest();
     }
 
     // <FS:Zi> Pathfinding rebake functions
@@ -825,9 +834,17 @@ void LLStatusBar::setBalance(S32 balance)
     std::string money_str = LLResMgr::getInstance()->getMonetaryString( balance );
 
     LLStringUtil::format_map_t string_args;
-    string_args["[AMT]"] = llformat("%s", money_str.c_str());
+    if (mObscureBalance)
+    {
+        string_args["[AMT]"] = "****";
+    }
+    else
+    {
+        string_args["[AMT]"] = llformat("%s", money_str.c_str());
+    }
     std::string label_str = getString("buycurrencylabel", string_args);
     mBoxBalance->setValue(label_str);
+    mBoxBalance->setToolTipArg(LLStringExplicit("[AMT]"), llformat("%s", money_str.c_str()));
 
     updateBalancePanelPosition();
 
@@ -847,8 +864,6 @@ void LLStatusBar::setBalance(S32 balance)
 
     if( balance != mBalance )
     {
-        mBalanceTimer->reset();
-        mBalanceTimer->setTimerExpirySec( ICON_TIMER_EXPIRY );
         mBalance = balance;
     }
 }
@@ -900,9 +915,6 @@ void LLStatusBar::setHealth(S32 health)
                 }
             }
         }
-
-        mHealthTimer->reset();
-        mHealthTimer->setTimerExpirySec( ICON_TIMER_EXPIRY );
     }
 
     mHealth = health;
@@ -1085,11 +1097,25 @@ void LLStatusBar::onClickVolume(void* data)
 }
 
 //static
-void LLStatusBar::onClickBalance(void* )
+void LLStatusBar::onClickRefreshBalance(void* data)
 {
-    // Force a balance request message:
-    LLStatusBar::sendMoneyBalanceRequest();
+    LLStatusBar* status_bar = (LLStatusBar*)data;
+
+    if (!status_bar->mBalanceClicked)
+    {
+        // Schedule a balance request message:
+        status_bar->mBalanceClicked = true;
+        status_bar->mBalanceClickTimer.reset();
+    }
     // The refresh of the display (call to setBalance()) will be done by process_money_balance_reply()
+}
+
+void LLStatusBar::onClickToggleBalance()
+{
+    mObscureBalance = !mObscureBalance;
+    gSavedSettings.setBOOL("ObscureBalanceInStatusBar", mObscureBalance);
+    setBalance(mBalance);
+    mBalanceClicked = false; // supress click
 }
 
 //static
@@ -1196,6 +1222,12 @@ void LLStatusBar::onVolumeChanged(const LLSD& newvalue)
 //}
 // </FS:Ansariel>
 
+void LLStatusBar::onObscureBalanceChanged(const LLSD& newvalue)
+{
+    mObscureBalance = newvalue.asBoolean();
+    setBalance(mBalance);
+}
+
 void LLStatusBar::onUpdateFilterTerm()
 {
     LLWString searchValue = utf8str_to_wstring( mFilterEdit->getValue() );
@@ -1291,13 +1323,12 @@ void LLStatusBar::updateBalancePanelPosition()
     balance_bg_view->setShape(balance_bg_rect);
 }
 
+void LLStatusBar::setBalanceVisible(bool visible)
+{
+    mBoxBalance->setVisible(visible);
+}
 //////////////////////////////////////////////////////////////////////////////
 // Firestorm methods
-
-void LLStatusBar::showBalance(bool show)
-{
-    mBoxBalance->setVisible(show);
-}
 
 // <COLOSI opensim multi-currency support>
 void LLStatusBar::updateCurrencySymbols()

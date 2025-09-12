@@ -37,10 +37,12 @@
 #include "llavatariconctrl.h"
 #include "llchatentry.h"
 #include "llchathistory.h"
+#include "llfloaterchatmentionpicker.h"
 #include "llchiclet.h"
 #include "llchicletbar.h"
 #include "lldraghandle.h"
 #include "llemojidictionary.h"
+#include "llemojihelper.h"
 #include "llfloaterreg.h"
 #include "llfloateremojipicker.h"
 #include "llfloaterimsession.h"
@@ -106,26 +108,7 @@ LLFloaterIMSessionTab::~LLFloaterIMSessionTab()
 {
     delete mRefreshTimer;
     LLIMMgr::instance().removeSessionObserver(this);
-
-    LLFloaterIMContainer* im_container = LLFloaterIMContainer::findInstance();
-    if (im_container)
-    {
-        LLParticipantList* session = dynamic_cast<LLParticipantList*>(im_container->getSessionModel(mSessionID));
-        if (session)
-        {
-            for (const conversations_widgets_map::value_type& widget_pair : mConversationsWidgets)
-            {
-                LLFolderViewItem* widget = widget_pair.second;
-                LLFolderViewModelItem* item_vmi = widget->getViewModelItem();
-                if (item_vmi && item_vmi->getNumRefs() == 1)
-                {
-                    // This is the last pointer, remove participant from session
-                    // before participant gets deleted on destroyView.
-                    session->removeChild(item_vmi);
-                }
-            }
-        }
-    }
+    mEmojiCloseConn.disconnect();
 }
 
 // static
@@ -302,6 +285,8 @@ bool LLFloaterIMSessionTab::postBuild()
 
     mEmojiPickerShowBtn = getChild<LLButton>("emoji_picker_show_btn");
     mEmojiPickerShowBtn->setClickedCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerShowBtnClicked(); });
+    mEmojiPickerShowBtn->setMouseDownCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerShowBtnDown(); });
+    mEmojiCloseConn = LLEmojiHelper::instance().setCloseCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerClosed(); });
 
     mGearBtn = getChild<LLButton>("gear_btn");
     mAddBtn = getChild<LLButton>("add_btn");
@@ -484,6 +469,7 @@ void LLFloaterIMSessionTab::onFocusReceived()
         LLIMModel::instance().sendNoUnreadMessages(mSessionID);
     }
 
+    LLFloaterChatMentionPicker::updateSessionID(mSessionID);
     super::onFocusReceived();
 }
 
@@ -534,8 +520,43 @@ void LLFloaterIMSessionTab::onEmojiRecentPanelToggleBtnClicked()
 
 void LLFloaterIMSessionTab::onEmojiPickerShowBtnClicked()
 {
-    mInputEditor->setFocus(true);
-    mInputEditor->showEmojiHelper();
+    if (!mEmojiPickerShowBtn->getToggleState())
+    {
+        mInputEditor->hideEmojiHelper();
+        mInputEditor->setFocus(true);
+        mInputEditor->showEmojiHelper();
+        mEmojiPickerShowBtn->setToggleState(true); // in case hideEmojiHelper closed a visible instance
+    }
+    else
+    {
+        mInputEditor->hideEmojiHelper();
+        mEmojiPickerShowBtn->setToggleState(false);
+    }
+}
+
+void LLFloaterIMSessionTab::onEmojiPickerShowBtnDown()
+{
+    if (mEmojiHelperLastCallbackFrame == LLFrameTimer::getFrameCount())
+    {
+        // Helper gets closed by focus lost event on Down before before onEmojiPickerShowBtnDown
+        // triggers.
+        // If this condition is true, user pressed button and it was 'toggled' during press,
+        // restore 'toggled' state so that button will not reopen helper.
+        mEmojiPickerShowBtn->setToggleState(true);
+    }
+}
+
+void LLFloaterIMSessionTab::onEmojiPickerClosed()
+{
+    if (mEmojiPickerShowBtn->getToggleState())
+    {
+        mEmojiPickerShowBtn->setToggleState(false);
+        // Helper gets closed by focus lost event on Down before onEmojiPickerShowBtnDown
+        // triggers. If mEmojiHelperLastCallbackFrame is set and matches Down, means close
+        // was triggered by user's press.
+        // A bit hacky, but I can't think of a better way to handle this without rewriting helper.
+        mEmojiHelperLastCallbackFrame = LLFrameTimer::getFrameCount();
+    }
 }
 
 void LLFloaterIMSessionTab::initEmojiRecentPanel()
@@ -635,7 +656,8 @@ void LLFloaterIMSessionTab::appendMessage(const LLChat& chat, const LLSD& args)
     chat_args["show_names_for_p2p_conv"] = !mIsP2PChat ||
             gSavedSettings.getBOOL("IMShowNamesForP2PConv");
 
-    mChatHistory->appendMessage(chat, chat_args);
+    static const LLStyle::Params input_append_params = LLStyle::Params();
+    mChatHistory->appendMessage(chat, chat_args, input_append_params);
 }
 
 void LLFloaterIMSessionTab::updateUsedEmojis(LLWStringView text)
@@ -690,7 +712,7 @@ void LLFloaterIMSessionTab::buildConversationViewParticipant()
     LLFolderViewModelItemCommon::child_list_t::const_iterator end_participant_model = item->getChildrenEnd();
     while (current_participant_model != end_participant_model)
     {
-        LLConversationItem* participant_model = dynamic_cast<LLConversationItem*>(*current_participant_model);
+        LLConversationItem* participant_model = dynamic_cast<LLConversationItem*>((*current_participant_model).get());
         if (participant_model)
         {
             addConversationViewParticipant(participant_model);
@@ -734,27 +756,6 @@ void LLFloaterIMSessionTab::removeConversationViewParticipant(const LLUUID& part
     LLFolderViewItem* widget = get_ptr_in_map(mConversationsWidgets,participant_id);
     if (widget)
     {
-        LLFolderViewModelItem* item_vmi = widget->getViewModelItem();
-        if (item_vmi && item_vmi->getNumRefs() == 1)
-        {
-            // This is the last pointer, remove participant from session
-            // before participant gets deleted on destroyView.
-            //
-            // Floater (widget) and participant's view can simultaneously
-            // co-own the model, in which case view is responsible for
-            // the deletion and floater is free to clear and recreate
-            // the list, yet there are cases where only widget owns
-            // the pointer so it should do the cleanup.
-            // See "add_participant".
-            //
-            // Todo: If it keeps causing issues turn participants
-            // into LLPointers in the session
-            LLParticipantList* session = getParticipantList();
-            if (session)
-            {
-                session->removeChild(item_vmi);
-            }
-        }
         widget->destroyView();
     }
     mConversationsWidgets.erase(participant_id);
@@ -820,7 +821,7 @@ void LLFloaterIMSessionTab::refreshConversation()
             LLIMSpeakerMgr *speaker_mgr = LLIMModel::getInstance()->getSpeakerManager(mSessionID);
             while (current_participant_model != end_participant_model)
             {
-                LLConversationItemParticipant* participant_model = dynamic_cast<LLConversationItemParticipant*>(*current_participant_model);
+                LLConversationItemParticipant* participant_model = dynamic_cast<LLConversationItemParticipant*>((*current_participant_model).get());
                 if (speaker_mgr && participant_model)
                 {
                     LLSpeaker *participant_speaker = speaker_mgr->findSpeaker(participant_model->getUUID());

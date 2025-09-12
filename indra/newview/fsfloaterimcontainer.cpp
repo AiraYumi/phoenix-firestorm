@@ -39,7 +39,13 @@
 #include "llchicletbar.h"
 #include "llemojihelper.h"
 #include "lltoolbarview.h"
+#include "llurlregistry.h"
 #include "llvoiceclient.h"
+
+// <FS:PP> Restore open IMs from previous session
+#include "llconversationlog.h"
+#include "llimview.h"
+// </FS:PP>
 
 constexpr F32 VOICE_STATUS_UPDATE_INTERVAL = 1.0f;
 
@@ -172,6 +178,7 @@ void FSFloaterIMContainer::onClose(bool app_quitting)
 {
     if (app_quitting)
     {
+        saveOpenIMs(); // <FS:PP> Save open IM sessions before closing
         for (S32 i = 0; i < mTabContainer->getTabCount(); ++i)
         {
             FSFloaterIM* floater = dynamic_cast<FSFloaterIM*>(mTabContainer->getPanelByIndex(i));
@@ -316,6 +323,9 @@ void FSFloaterIMContainer::removeFloater(LLFloater* floaterp)
         gSavedSettings.setBOOL(setting_name, true);
         floaterp->setCanClose(true);
     }
+
+    mFlashingTabStates.erase(floaterp);
+
     LLMultiFloater::removeFloater(floaterp);
 }
 // [/SL:KB]
@@ -345,21 +355,17 @@ void FSFloaterIMContainer::onCloseFloater(LLUUID& id)
     }
 }
 
-void FSFloaterIMContainer::onNewMessageReceived(const LLSD& data)
+void FSFloaterIMContainer::onNewMessageReceived(const LLSD& msg)
 {
-    LLUUID session_id = data["session_id"].asUUID();
+    LLUUID session_id = msg["session_id"].asUUID();
     LLFloater* floaterp = get_ptr_in_map(mSessions, session_id);
     LLFloater* current_floater = LLMultiFloater::getActiveFloater();
 
     // KC: Don't flash tab on friend status changes per setting
     if (floaterp && current_floater && floaterp != current_floater
-        && (gSavedSettings.getBOOL("FSIMChatFlashOnFriendStatusChange") || !data.has("from_id") || data["from_id"].asUUID().notNull()))
+        && (gSavedSettings.getBOOL("FSIMChatFlashOnFriendStatusChange") || !msg.has("from_id") || msg["from_id"].asUUID().notNull()))
     {
-        if (LLMultiFloater::isFloaterFlashing(floaterp))
-        {
-            LLMultiFloater::setFloaterFlashing(floaterp, false);
-        }
-        LLMultiFloater::setFloaterFlashing(floaterp, true);
+        startFlashingTab(floaterp, msg["message"].asString());
     }
 }
 
@@ -372,6 +378,22 @@ FSFloaterIMContainer* FSFloaterIMContainer::getInstance()
 {
     return LLFloaterReg::getTypedInstance<FSFloaterIMContainer>("fs_im_container");
 }
+
+// <FS:TJ> [FIRE-35804] Allow the IM floater to have separate transparency
+F32 FSFloaterIMContainer::getCurrentTransparency()
+{
+    static LLCachedControl<F32> im_opacity(gSavedSettings, "FSIMOpacity", 1.0f);
+    static LLCachedControl<bool> im_active_opacity_override(gSavedSettings, "FSImActiveOpacityOverride", false);
+
+    F32 floater_opacity = LLUICtrl::getCurrentTransparency();
+    if (im_active_opacity_override && getTransparencyType() == TT_ACTIVE)
+    {
+        return floater_opacity;
+    }
+
+    return llmin(im_opacity(), floater_opacity);
+}
+// </FS:TJ>
 
 void FSFloaterIMContainer::setVisible(bool b)
 {
@@ -559,16 +581,15 @@ void FSFloaterIMContainer::addFlashingSession(const LLUUID& session_id)
     uuid_vec_t::iterator found = std::find(mFlashingSessions.begin(), mFlashingSessions.end(), session_id);
     if (found == mFlashingSessions.end())
     {
-        mFlashingSessions.push_back(session_id);
+        mFlashingSessions.emplace_back(session_id);
     }
+
+    checkFlashing();
 }
 
 void FSFloaterIMContainer::checkFlashing()
 {
-    if (mFlashingSessions.empty())
-    {
-        gToolBarView->flashCommand(LLCommandId("chat"), false);
-    }
+    gToolBarView->flashCommand(LLCommandId("chat"), !mFlashingSessions.empty(), isMinimized());
 }
 
 void FSFloaterIMContainer::sessionIDUpdated(const LLUUID& old_session_id, const LLUUID& new_session_id)
@@ -584,5 +605,91 @@ void FSFloaterIMContainer::sessionIDUpdated(const LLUUID& old_session_id, const 
 void FSFloaterIMContainer::tabOpen(LLFloater* opened_floater, bool from_click)
 {
     LLEmojiHelper::instance().hideHelper(nullptr, true);
+
+    mFlashingTabStates.erase(opened_floater);
 }
+
+void FSFloaterIMContainer::startFlashingTab(LLFloater* floater, const std::string& message)
+{
+    const bool contains_mention = LLUrlRegistry::getInstance()->containsAgentMention(message);
+
+    auto& [session_floater, is_alt_flashing] = *(mFlashingTabStates.try_emplace(floater, false).first);
+    is_alt_flashing = is_alt_flashing || contains_mention;
+
+    if (LLMultiFloater::isFloaterFlashing(floater))
+    {
+        LLMultiFloater::setFloaterFlashing(floater, false);
+    }
+    LLMultiFloater::setFloaterFlashing(floater, true, is_alt_flashing);
+}
+
+// <FS:PP> Restore open IMs from previous session
+void FSFloaterIMContainer::saveOpenIMs()
+{
+    if (!gSavedSettings.getBOOL("FSRestoreOpenIMs"))
+    {
+        gSavedPerAccountSettings.setLLSD("FSLastOpenIMs", LLSD::emptyArray());
+        return;
+    }
+
+    LLSD openIMs = LLSD::emptyArray();
+    for (S32 i = 0; i < mTabContainer->getTabCount(); ++i)
+    {
+        FSFloaterIM* floater = dynamic_cast<FSFloaterIM*>(mTabContainer->getPanelByIndex(i));
+        if (floater)
+        {
+            LLUUID session_id = floater->getKey();
+            if (session_id.notNull())
+            {
+                LLIMModel::LLIMSession* session = LLIMModel::getInstance()->findIMSession(session_id);
+                if (session && session->mSessionType == LLIMModel::LLIMSession::P2P_SESSION)
+                {
+                    LLSD session_data = LLSD::emptyMap();
+                    session_data["other_participant_id"] = session->mOtherParticipantID;
+                    session_data["session_name"] = session->mName;
+                    openIMs.append(session_data);
+                }
+            }
+        }
+    }
+
+    gSavedPerAccountSettings.setLLSD("FSLastOpenIMs", openIMs);
+}
+
+void FSFloaterIMContainer::restoreOpenIMs()
+{
+    LLSD openIMs = gSavedPerAccountSettings.getLLSD("FSLastOpenIMs");
+    if (!openIMs.isArray() || openIMs.size() == 0)
+    {
+        return;
+    }
+
+    for (LLSD::array_const_iterator it = openIMs.beginArray(); it != openIMs.endArray(); ++it)
+    {
+        LLSD session_data = *it;
+        if (session_data.isMap())
+        {
+            LLUUID other_participant_id = session_data["other_participant_id"].asUUID();
+            std::string session_name = session_data["session_name"].asString();
+            if (other_participant_id.notNull())
+            {
+                LLUUID new_session_id;
+                new_session_id = LLIMMgr::getInstance()->addSession(session_name, IM_NOTHING_SPECIAL, other_participant_id);
+                if (new_session_id.notNull())
+                {
+                    FSFloaterIM* im_floater = FSFloaterIM::show(new_session_id);
+                    if (im_floater)
+                    {
+                        if (im_floater->getHost() != this)
+                        {
+                            addFloater(im_floater, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+// </FS:PP>
+
 // EOF

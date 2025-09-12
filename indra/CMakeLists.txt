@@ -29,6 +29,11 @@ else()
   set( USE_AUTOBUILD_3P ON )
 endif()
 
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 20)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(Variables)
 include(BuildVersion)
 
@@ -68,6 +73,15 @@ if(TESTBUILD AND TESTBUILDPERIOD)
 endif(TESTBUILD AND TESTBUILDPERIOD)
 #</FS:Ansariel>
 
+#<FS:Beq> Support for custom Primfeed UA
+option(FS_PF_USER_AGENT "Optional compile‐time Primfeed user‐agent string" "")
+if (FS_PF_USER_AGENT)
+    add_compile_definitions(FS_PF_USER_AGENT="${FS_PF_USER_AGENT}")
+    message(STATUS "Compiling with custom Primfeed user-agent: ${FS_PF_USER_AGENT}")
+else (FS_PF_USER_AGENT)
+    message(STATUS "Compiling with standard Primfeed user-agent")
+endif (FS_PF_USER_AGENT)
+# </Beq>
 # <FS:Ansariel> [AVX Optimization]
 option(USE_AVX_OPTIMIZATION "AVX optimization support" OFF)
 option(USE_AVX2_OPTIMIZATION "AVX2 optimization support" OFF)

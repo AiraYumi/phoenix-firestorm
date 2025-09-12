@@ -19,6 +19,7 @@
 	<menu_item_call label="Opróżnij Zagubione i odnalezione" name="Empty Lost And Found"/>
 	<menu_item_call label="Nowy folder" name="New Folder"/>
 	<menu_item_call label="Nowy folder" name="New Listing Folder" />
+	<menu_item_call label="Nowy folder" name="New Outfit Folder" />
 	<menu_item_call label="Nowy strój" name="New Outfit" />
 	<menu_item_call label="Nowy skrypt" name="New Script"/>
 	<menu_item_call label="Nowa nota" name="New Note"/>
@@ -89,6 +90,7 @@
 	<menu_item_call label="Nie chroń" name="UnprotectFolder" />
 	<menu_item_call label="Przeładuj folder" name="ReloadFolder" />
 	<menu_item_call label="Kopiuj identyfikator UUID" name="Copy Asset UUID"/>
+	<menu_item_call label="Kopiuj UUID" name="Copy UUID" />
 	<menu_item_call label="Przywróć na ostatnią pozycję" name="Restore to Last Position" />
 	<menu_item_call label="Znajdź w widoku ogólnym" name="Show in Main Panel"/>
 	<menu_item_call label="Pokaż w nowym oknie" name="Show in new Window" />
@@ -107,6 +109,8 @@
 	<menu_item_call label="Usuń folder systemowy" name="Delete System Folder"/>
 	<menu_item_call label="Utwórz folder z wybranych" name="New folder from selected" />
 	<menu_item_call label="Rozgrupuj elementy folderu" name="Ungroup folder items" />
+	<menu_item_call label="Dodaj do ulubionych" name="Add to Favorites" />
+	<menu_item_call label="Usuń z ulubionych" name="Remove from Favorites" />
 	<menu_item_call label="Rozpocznij konferencję czatową" name="Conference Chat Folder"/>
 	<menu_item_call label="Odtwarzaj" name="Sound Play"/>
 	<menu_item_call label="Kopiuj SLurl" name="url_copy"/>

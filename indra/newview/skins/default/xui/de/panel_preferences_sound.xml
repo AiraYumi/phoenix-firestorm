@@ -77,12 +77,23 @@
 		</combo_box>
 		<check_box name="media_allowscript_btn" tool_tip="Erlaubt bzw. verbietet Scripten die Kontrolle über die Medienwiedergabe" label="Skripte erlauben Medien abzuspielen" />
 		<check_box label="Medien, die an andere Avatare angehängt sind, wiedergeben." name="media_show_on_others_btn" tool_tip="Diese Option deaktivieren, um Medien für andere Avataren, die sich in der Nähe befinden, auszublenden."/>
+		<check_box label="Medien, die am eigenen HUD angehängt sind, automatisch wiedergeben." name="media_huds_autoplay" tool_tip="Diese Option deaktivieren, um für Medien an eigenen HUD-Objekten die Standard-Abspieleinstellungen für Medien anzuwenden."/>
 		<check_box name="media_filter" tool_tip="Aktiviert den Medienfilter, der abhängig der Medien-URL die Wiedergabe erlaubt oder verbietet." label="Medienfilter aktivieren (erhöhte Sicherheit)"/>
 		<button label="Listen bearbeiten..." name="edit_media_lists_button"/>
 		<text name="Media Rolloff">
 			Lautstärkeabfall-Distanz für Medien-Quellen:
 		</text>
 		<slider label="Wird leiser ab:" name="MediaRollOffMin" tool_tip="Minimale Distanz von der Soundquelle, ab der die Lautstärke abzufallen beginnt."/>
+		<text name="media_firstinteract_label" tool_tip="Diese Einstellung legt fest, welche Medien - nachdem diese geladen wurden - keinen erstmaligen Klick zur Interaktion benötigen. Dadurch wird das Klick-Event direkt zum Medium durchgereicht, ohne zuvor den Fokus erlangen zu müssen." width="140">
+			Medien Erst-Interaktion:
+		</text>
+		<check_box name="media_first_click_all" label="Alle Medien auf Objekten (MOAP)"/>
+		<check_box name="media_first_click_any" label="Objekte von Jedermann"/>
+		<check_box name="media_first_click_hud" label="Nur getragene HUDs"/>
+		<check_box name="media_first_click_own" label="Eigene Objekte"/>
+		<check_box name="media_first_click_group" label="Gruppen-Objekte"/>
+		<check_box name="media_first_click_friend" label="Objekte von Freunden"/>
+		<check_box name="media_first_click_land" label="Objekte des Landbesitzers"/>
 		<text name="MinMeters">
 			Meter
 		</text>
@@ -254,6 +265,13 @@ Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 		<button label="S" name="Def_UISndStartIM" tool_tip="Auf Standardwert zurücksetzen."/>
 		<check_box label="Abspielen" name="PlayModeUISndStartIM"/>
 
+		<text tool_tip="UUID des Klangs bei einer Erwähnung im Chat." name="textChatMention">
+			Chat-Erwähnung:
+		</text>
+		<button label="V" name="Prev_UISndChatMention" tool_tip="Vorschau zu diesem Klang."/>
+		<button label="S" name="Def_UISndChatMention" tool_tip="Auf Standardwert zurücksetzen."/>
+		<check_box label="Abspielen" name="PlayModeUISndChatMention"/>
+
 		<text tool_tip="UUID des Klangs beim Erzeugen eines neuen Objektes." name="textFSObjectCreate">
 			Objekterstellung:
 		</text>
@@ -288,15 +306,7 @@ Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 		<button label="V" name="Prev_UISndSnapshot" tool_tip="Vorschau zu diesem Klang."/>
 		<button label="S" name="Def_UISndSnapshot" tool_tip="Auf Standardwert zurücksetzen."/>
 		<check_box label="Stummschalten" name="QuietSnapshotsToDiskCheckBox"/>
-
-		<text tool_tip="UUID des Klangs beim Teleportieren. Diese Einstellung ist gekoppelt an die Option Bewegen/Anzeigen &gt; Bewegung &gt; 'Soundeffekte beim Teleportieren abspielen'." name="textFSTeleportOut">
-			Teleportieren:
-		</text>
-		<button label="V" name="Prev_UISndTeleportOut" tool_tip="Vorschau zu diesem Klang."/>
-		<button label="S" name="Def_UISndTeleportOut" tool_tip="Auf Standardwert zurücksetzen."/>
-		<check_box label="Abspielen" name="PlayModeUISndTeleportOut"/>
-
-    </panel>
+	</panel>
 
 	<!-- UI Sounds 2 -->
 	<panel label="UI-Klänge 2" name="UI Sounds tab 2">
@@ -304,6 +314,13 @@ Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 			Hier können die Klänge der Benutzeroberfläche geändert, aktiviert oder deaktiviert werden.
 Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 		</text>
+
+		<text tool_tip="UUID des Klangs beim Teleportieren. Diese Einstellung ist gekoppelt an die Option Bewegen/Anzeigen &gt; Bewegung &gt; 'Soundeffekte beim Teleportieren abspielen'." name="textFSTeleportOut">
+			Teleportieren:
+		</text>
+		<button label="V" name="Prev_UISndTeleportOut" tool_tip="Vorschau zu diesem Klang."/>
+		<button label="S" name="Def_UISndTeleportOut" tool_tip="Auf Standardwert zurücksetzen."/>
+		<check_box label="Abspielen" name="PlayModeUISndTeleportOut"/>
 
 		<text tool_tip="UUID des Klangs beim Öffnen des Pie-Menüs." name="textFSPieMenuAppear">
 			Öffnen Pie-Menü:
@@ -423,13 +440,6 @@ Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 		<button label="V" name="Prev_UISndFriendshipOffer" tool_tip="Vorschau zu diesem Klang."/>
 		<button label="S" name="Def_UISndFriendshipOffer" tool_tip="Auf Standardwert zurücksetzen."/>
 		<check_box label="Abspielen" name="PlayModeUISndFriendshipOffer"/>
-
-		<text tool_tip="UUID des Klangs für Teleport-Angebote." name="textFSTeleportOffer">
-			Teleport-Angebote:
-		</text>
-		<button label="V" name="Prev_UISndTeleportOffer" tool_tip="Vorschau zu diesem Klang."/>
-		<button label="S" name="Def_UISndTeleportOffer" tool_tip="Auf Standardwert zurücksetzen."/>
-		<check_box label="Abspielen" name="PlayModeUISndTeleportOffer"/>
 	</panel>
 
 	<!-- UI Sounds 3 -->
@@ -438,6 +448,13 @@ Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 			Hier können die Klänge der Benutzeroberfläche geändert, aktiviert oder deaktiviert werden.
 Der jeweilige Standardwert wird im Hovertip des UUID-Feldes angezeigt.
 		</text>
+
+		<text tool_tip="UUID des Klangs für Teleport-Angebote." name="textFSTeleportOffer">
+			Teleport-Angebote:
+		</text>
+		<button label="V" name="Prev_UISndTeleportOffer" tool_tip="Vorschau zu diesem Klang."/>
+		<button label="S" name="Def_UISndTeleportOffer" tool_tip="Auf Standardwert zurücksetzen."/>
+		<check_box label="Abspielen" name="PlayModeUISndTeleportOffer"/>
 
 		<text tool_tip="UUID des Klangs für Inventarangebote" name="textFSInventoryOffer">
 			Inventarangebote:

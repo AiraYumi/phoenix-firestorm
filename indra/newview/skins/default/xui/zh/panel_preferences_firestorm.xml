@@ -12,6 +12,7 @@
 			<check_box label="當指令碼通訊時建立粒子效果" name="EffectScriptChatParticles" tool_tip="啟用此選項會在與通訊的物件周圍顯示一個小的旋轉雲。" />
 			<check_box label="當您接近特定人物時關閉追蹤標籤 (&lt;= 3m)" name="FSDisableAvatarTrackerAtCloseIn" tool_tip="啟用此選項將在您接近人物時自動關閉追蹤標籤 (&lt;= 3m 預設)" />
 			<check_box label="設定閒置便當動畫" name="play_default_bento_idle_animation_toggle" tool_tip="如果啟用此選項，檢視器將在沒有其他便當動畫正在運行時播放預設的便當動畫， 優先度為0，將手、翅膀、嘴和尾巴放在自然位置。" />
+			<check_box label="站立後重置化身骨骼" name="FSResetSkeletonOnStandUp" tool_tip="啟用此選項後，當你站起時，檢視器會自動重置您的化身骨骼，並將重置訊息發送給周圍的其他居民，以便讓他們的用戶端同時更你您的外觀。" />
 			<check_box label="登入時禁用載入螢幕" name="login_screen_toggle" tool_tip="禁用登入時的載入螢幕" />
 			<check_box label="登出時禁用載入螢幕" name="logout_screen_toggle" tool_tip="禁用登出時的載入螢幕" />
 			<check_box label="啟用漸進式遠景剪裁距離" name="FSRenderFarClipStepping" tool_tip="如果啟用，Firestorm 將在傳送後使用逐步遠景剪裁距離。" />
@@ -25,7 +26,8 @@
 				<combo_box.item label="飛行輔助：極端增壓" name="flight_extreme" />
 			</combo_box>
 			<slider name="manual_environment_change_transition_period" label="環境過渡時長：" tool_tip="在環境之間的轉換間隔時間（以秒為單位）。0 表示瞬時。" />
-			<check_box name="EnvironmentPersistAcrossLogin" label="在對談之間保持環境設定" tool_tip="在下次登入時保留當前的環境設定。" />
+			<check_box name="EnvironmentPersistAcrossLogin" label="在每次登入時保持環境設定" tool_tip="在下次登入時保留當前的環境設定。" />
+			<check_box name="FSRepeatedEnvTogglesShared" label="環境設定快捷鍵為開關式" tool_tip="重複按下快捷鍵可在想要的環境設定和共享環境之間切換。"/>
 		</panel>
 		<panel label="保護" name="ProtectionTab">
 			<check_box label="阻止通過簡單點擊坐在物件上" name="FSBlockClickSit" />
@@ -82,9 +84,6 @@
 			<text name="text_box_objprams">預設尺寸</text>
 			<text name="text_box_objprams2">參數</text>
 			<text name="text_box_objprams3">紋理</text>
-			<spinner label="X" name="X size" />
-			<spinner label="Y" name="Y size" />
-			<spinner label="Z" name="Z size" />
 			<check_box label="幻影" name="FSBuildPrefs_PhantomToggle" />
 			<check_box label="物理" name="FSBuildPrefs_PhysicalToggle" />
 			<check_box label="臨時" name="FSBuildPrefs_TemporaryToggle" />
@@ -100,7 +99,7 @@
 			<texture_picker label="紋理" name="texture control" tool_tip="點擊選擇圖像" />
 			<color_swatch label="顏色" name="colorswatch" tool_tip="點擊打開顏色選擇器" />
 			<spinner label="透明度" name="alpha" />
-			<spinner label="發光" name="glow" />
+			<spinner label="光暈" name="glow" />
 			<check_box label="最大亮度" name="EmFBToggle" />
 			<combo_box name="combobox shininess" tool_tip="設定物件髮光亮度">
 				<combo_item name="None" label="無" />

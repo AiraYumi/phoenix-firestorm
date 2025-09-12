@@ -241,12 +241,15 @@ LLModel::EModelStatus load_face_from_dom_triangles(
 
     if (idx_stride <= 0
         || (pos_source && pos_offset >= idx_stride)
+        || (pos_source && pos_offset < 0)
         || (tc_source && tc_offset >= idx_stride)
-        || (norm_source && norm_offset >= idx_stride))
+        || (tc_source && tc_offset < 0)
+        || (norm_source && norm_offset >= idx_stride)
+        || (norm_source && norm_offset < 0))
     {
         // Looks like these offsets should fit inside idx_stride
         // Might be good idea to also check idx.getCount()%idx_stride != 0
-        LL_WARNS() << "Invalid pos_offset " << pos_offset <<  ", tc_offset " << tc_offset << " or norm_offset " << norm_offset << LL_ENDL;
+        LL_WARNS() << "Invalid idx_stride " << idx_stride << ", pos_offset " << pos_offset <<  ", tc_offset " << tc_offset << " or norm_offset " << norm_offset << LL_ENDL;
         return LLModel::BAD_ELEMENT;
     }
 
@@ -917,9 +920,10 @@ LLDAELoader::LLDAELoader(
     void*               opaque_userdata,
     JointTransformMap&  jointTransformMap,
     JointNameSet&       jointsFromNodes,
-    std::map<std::string, std::string>&     jointAliasMap,
+    std::map<std::string, std::string, std::less<>>&     jointAliasMap,
     U32                 maxJointsPerMesh,
     U32                 modelLimit,
+    U32                 debugMode,
     // <FS:Beq> mesh loader suffix configuration
     // bool             preprocess)
     bool                preprocess,
@@ -936,8 +940,9 @@ LLDAELoader::LLDAELoader(
         jointTransformMap,
         jointsFromNodes,
         jointAliasMap,
-        maxJointsPerMesh),
-  mGeneratedModelLimit(modelLimit),
+        maxJointsPerMesh,
+        modelLimit,
+        debugMode),
   mPreprocessDAE(preprocess)
 {
     // <FS:Beq> mesh loader suffix configuration
@@ -1467,10 +1472,7 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
                             {
                                 name = mJointMap[name];
                             }
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-//                          model->mSkinInfo.mJointNames.push_back( name );
-                            model->mSkinInfo.mJointNames.push_back( JointKey::construct( name ) );
-// </FS:ND>
+                            model->mSkinInfo.mJointNames.push_back(name);
                             model->mSkinInfo.mJointNums.push_back(-1);
                         }
                     }
@@ -1488,10 +1490,7 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
                                 {
                                     name = mJointMap[name];
                                 }
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-//                              model->mSkinInfo.mJointNames.push_back( name );
-                                model->mSkinInfo.mJointNames.push_back( JointKey::construct( name ) );
-// </FS:ND>
+                                model->mSkinInfo.mJointNames.push_back(name);
                                 model->mSkinInfo.mJointNums.push_back(-1);
                             }
                         }
@@ -1508,7 +1507,17 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
                     {
                         domListOfFloats& transform = t->getValue();
                         auto count = transform.getCount()/16;
-
+    
+                        // <FS:Beq> FIRE-34811 Crash during import due to missing inv_bind_matrices.
+                        if (count==0)
+                        {
+                            LL_WARNS("DAELOader") << "Invalid rigged mesh: Missing inv_bind_matrices." << LL_ENDL;
+                            LLSD args;
+                            args["Message"] = "ParsingErrorEmptyInvBindInvalidModel";
+                            mWarningsArray.append(args);
+                            setLoadState( ERROR_PARSING );
+                        }
+                        // </FS:Beq>                        
                         for (size_t k = 0; k < count; ++k)
                         {
                             LLMatrix4 mat;
@@ -1526,17 +1535,21 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
                 }
             }
         }
-
+        // <FS:Beq> FIRE-34811 Crash during import due to missing inv_bind_matrices.
+        if (model->mSkinInfo.mInvBindMatrix.empty())
+        {
+            model->mSkinInfo.mJointNames.clear();
+            model->mSkinInfo.mJointNums.clear();
+            missingSkeletonOrScene = true; // set this true as we've just wiped that data.
+        }
+        // </FS:Beq>
         //Now that we've parsed the joint array, let's determine if we have a full rig
         //(which means we have all the joint sthat are required for an avatar versus
         //a skinned asset attached to a node in a file that contains an entire skeleton,
         //but does not use the skeleton).
         buildJointToNodeMappingFromScene( root );
 
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-//      critiqueRigForUploadApplicability( model->mSkinInfo.mJointNames );
-        critiqueRigForUploadApplicability( toStringVector( model->mSkinInfo.mJointNames ) );
-// </FS:ND>
+        critiqueRigForUploadApplicability( model->mSkinInfo.mJointNames );
 
         if ( !missingSkeletonOrScene )
         {
@@ -1589,11 +1602,7 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
         //with the skeleton are not stored in the same order as they are in the exported joint buffer.
         //This remaps the skeletal joints to be in the same order as the joints stored in the model.
 
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-        //      std::vector<std::string> ::const_iterator jointIt = model->mSkinInfo.mJointNames.begin();
-        std::vector< std::string > jointNames = toStringVector( model->mSkinInfo.mJointNames );
-        std::vector<std::string> ::const_iterator jointIt = jointNames.begin();
-// </FS:ND>
+        std::vector<std::string> ::const_iterator jointIt = model->mSkinInfo.mJointNames.begin();
 
         const int jointCnt = static_cast<int>(model->mSkinInfo.mJointNames.size());
         for ( int i=0; i<jointCnt; ++i, ++jointIt )
@@ -1749,6 +1758,7 @@ void LLDAELoader::processDomModel(LLModel* model, DAE* dae, daeElement* root, do
         {
             materials[model->mMaterialList[i]] = LLImportMaterial();
         }
+        // todo: likely a bug here, shouldn't be using suffixed label, see how it gets used in other places.
         mScene[transformation].push_back(LLModelInstance(model, model->mLabel, transformation, materials));
         stretch_extents(model, transformation);
     }
@@ -2491,7 +2501,7 @@ std::string LLDAELoader::getElementLabel(daeElement *element)
 }
 
 // static
-size_t LLDAELoader::getSuffixPosition(std::string label)
+size_t LLDAELoader::getSuffixPosition(const std::string &label)
 {
     // <FS:Beq> Selectable suffixes
     //if ((label.find("_LOD") != -1) || (label.find("_PHYS") != -1))

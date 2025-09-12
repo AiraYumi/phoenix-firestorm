@@ -56,10 +56,7 @@ public:
     U32 sizeBytes() const;
 
     LLUUID mMeshID;
-//<FS:ND> Query by JointKey rather than just a string, the key can be a U32 index for faster lookup
-//  std::vector<std::string> mJointNames;
-    std::vector< JointKey > mJointNames;
-// </FS:ND>
+    std::vector<std::string> mJointNames;
     mutable std::vector<S32> mJointNums;
     typedef std::vector<LLMatrix4a> matrix_list_t;
     matrix_list_t mInvBindMatrix;
@@ -165,6 +162,12 @@ public:
     bool loadSkinInfo(LLSD& header, std::istream& is);
     bool loadDecomposition(LLSD& header, std::istream& is);
 
+    enum EWriteModelMode
+    {
+        WRITE_NO = 0,
+        WRITE_BINARY,
+        WRITE_HUMAN,
+    };
     static LLSD writeModel(
         std::ostream& ostr,
         LLModel* physics,
@@ -176,14 +179,14 @@ public:
         bool upload_skin,
         bool upload_joints,
         bool lock_scale_if_joint_position,
-        bool nowrite = false,
+        EWriteModelMode write_mode = WRITE_BINARY,
         bool as_slm = false,
         int submodel_id = 0);
 
     static LLSD writeModelToStream(
         std::ostream& ostr,
         LLSD& mdl,
-        bool nowrite = false, bool as_slm = false);
+        EWriteModelMode write_mode = WRITE_BINARY, bool as_slm = false);
 
     void ClearFacesAndMaterials() { mVolumeFaces.clear(); mMaterialList.clear(); }
 
@@ -207,6 +210,7 @@ public:
 
     void sortVolumeFacesByMaterialName();
     void normalizeVolumeFaces();
+    void normalizeVolumeFacesAndWeights();
     void trimVolumeFacesToSize(U32 new_count = LL_SCULPT_MESH_MAX_FACES, LLVolume::face_list_t* remainder = NULL);
     void remapVolumeFaces();
     void optimizeVolumeFaces();

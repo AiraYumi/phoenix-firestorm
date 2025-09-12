@@ -142,15 +142,13 @@
 #include "llavatarname.h"   // <FS:CR> Deeper name cache stuffs
 #include "llclipboard.h"    // <FS:Zi> Support preferences search SLURLs
 #include "lldiriterator.h"  // <Kadah> for populating the fonts combo
-#include "lleventtimer.h"
 #include "llline.h"
 #include "lllocationhistory.h"
 #include "llpanelblockedlist.h"
 #include "llpanelmaininventory.h"
-#include "llscrolllistctrl.h"
-#include "llsdserialize.h" // KB: SkinsSelector
 #include "llspellcheck.h"
 #include "lltoolbarview.h"
+#include "lltoolpie.h"
 #include "llviewermenufile.h" // <FS:LO> FIRE-23606 Reveal path to external script editor in prefernces
 #include "llviewernetwork.h" // <FS:AW  opensim search support>
 #include "llviewershadermgr.h"
@@ -510,6 +508,7 @@ LLFloaterPreference::LLFloaterPreference(const LLSD& key)
     // mCommitCallbackRegistrar.add("Pref.AutoAdjustments",         boost::bind(&LLFloaterPreference::onClickAutoAdjustments, this)); // <FS:Beq/> Not required in FS at present
     mCommitCallbackRegistrar.add("Pref.HardwareDefaults",       boost::bind(&LLFloaterPreference::setHardwareDefaults, this));
     mCommitCallbackRegistrar.add("Pref.AvatarImpostorsEnable",  boost::bind(&LLFloaterPreference::onAvatarImpostorsEnable, this));
+    mCommitCallbackRegistrar.add("Pref.UpdateIndirectMaxNonImpostors", boost::bind(&LLFloaterPreference::updateMaxNonImpostors, this));
     mCommitCallbackRegistrar.add("Pref.UpdateIndirectMaxComplexity",    boost::bind(&LLFloaterPreference::updateMaxComplexity, this));
     mCommitCallbackRegistrar.add("Pref.RenderOptionUpdate",     boost::bind(&LLFloaterPreference::onRenderOptionEnable, this));
     mCommitCallbackRegistrar.add("Pref.LocalLightsEnable",      boost::bind(&LLFloaterPreference::onLocalLightsEnable, this));
@@ -527,10 +526,6 @@ LLFloaterPreference::LLFloaterPreference(const LLSD& key)
     mCommitCallbackRegistrar.add("Pref.RememberedUsernames",    boost::bind(&LLFloaterPreference::onClickRememberedUsernames, this));
     mCommitCallbackRegistrar.add("Pref.SpellChecker",           boost::bind(&LLFloaterPreference::onClickSpellChecker, this));
     mCommitCallbackRegistrar.add("Pref.Advanced",               boost::bind(&LLFloaterPreference::onClickAdvanced, this));
-
-    // <FS:Ansariel> Improved graphics preferences
-    mCommitCallbackRegistrar.add("Pref.UpdateIndirectMaxNonImpostors", boost::bind(&LLFloaterPreference::updateMaxNonImpostors, this));
-    // </FS:Ansariel>
 
     // <FS:Zi> Support preferences search SLURLs
     mCommitCallbackRegistrar.add("Pref.CopySearchAsSLURL",      boost::bind(&LLFloaterPreference::onCopySearch, this));
@@ -550,10 +545,16 @@ LLFloaterPreference::LLFloaterPreference(const LLSD& key)
     LLAvatarPropertiesProcessor::getInstance()->addObserver( gAgent.getID(), this );
 
     mComplexityChangedSignal = gSavedSettings.getControl("RenderAvatarMaxComplexity")->getCommitSignal()->connect(boost::bind(&LLFloaterPreference::updateComplexityText, this));
+    mImpostorsChangedSignal = gSavedSettings.getControl("RenderAvatarMaxNonImpostors")->getSignal()->connect(boost::bind(&LLFloaterPreference::updateIndirectMaxNonImpostors, this, _2));
 
     mCommitCallbackRegistrar.add("Pref.ClearLog",               boost::bind(&LLConversationLog::onClearLog, &LLConversationLog::instance()));
     mCommitCallbackRegistrar.add("Pref.DeleteTranscripts",      boost::bind(&LLFloaterPreference::onDeleteTranscripts, this));
     mCommitCallbackRegistrar.add("UpdateFilter", boost::bind(&LLFloaterPreference::onUpdateFilterTerm, this, false)); // <FS:ND/> Hook up for filtering
+#ifdef LL_DISCORD
+    gSavedSettings.getControl("EnableDiscord")->getCommitSignal()->connect(boost::bind(&LLAppViewer::toggleDiscordIntegration, _2));
+    gSavedSettings.getControl("ShowDiscordActivityDetails")->getCommitSignal()->connect(boost::bind(&LLAppViewer::updateDiscordActivity));
+    gSavedSettings.getControl("ShowDiscordActivityState")->getCommitSignal()->connect(boost::bind(&LLAppViewer::updateDiscordActivity));
+#endif
 
     // <Firestorm Callbacks>
     mCommitCallbackRegistrar.add("NACL.AntiSpamUnblock",        boost::bind(&LLFloaterPreference::onClickClearSpamList, this));
@@ -763,6 +764,13 @@ bool LLFloaterPreference::postBuild()
         getChild<LLComboBox>("language_combobox")->add("System default", LLSD("default"), ADD_TOP, true);
     }
 
+// <FS:Ansariel> Prefer FS-specific Discord implementation
+//#ifndef LL_DISCORD
+//    LLPanel* panel = getChild<LLPanel>("privacy_preferences_discord");
+//    getChild<LLTabContainer>("privacy_tab_container")->removeTabPanel(panel);
+//#endif
+// </FS:Ansariel>
+
 // [SL:KB] - Patch: Viewer-CrashReporting | Checked: 2011-06-11 (Catznip-2.6.c) | Added: Catznip-2.6.0c
 #ifndef LL_SEND_CRASH_REPORTS
     // Hide the crash report tab if crash reporting isn't enabled
@@ -945,7 +953,12 @@ void LLFloaterPreference::onDoNotDisturbResponseChanged()
 LLFloaterPreference::~LLFloaterPreference()
 {
     LLConversationLog::instance().removeObserver(this);
+    if (LLAvatarPropertiesProcessor::instanceExists())
+    {
+        LLAvatarPropertiesProcessor::getInstance()->removeObserver(gAgent.getID(), this);
+    }
     mComplexityChangedSignal.disconnect();
+    mImpostorsChangedSignal.disconnect();
 }
 
 // <FS:Zi> FIRE-19539 - Include the alert messages in Prefs>Notifications>Alerts in preference Search.
@@ -1965,7 +1978,7 @@ void LLFloaterPreference::changeExternalEditorPath(const std::vector<std::string
         if (NULL != bundleInfoDict)
         {
             CFStringRef executable_cfstr = (CFStringRef)CFDictionaryGetValue(bundleInfoDict, CFSTR("CFBundleExecutable"));  // get the name of the actual executable (e.g. TextEdit or firefox-bin)
-            int max_file_length = 256;                                                                                      // (max file name length is 255 in OSX)
+            const int max_file_length = 256;                                                                                      // <FS:Beq/> another new complaint from clang
             char executable_buf[max_file_length];
             if (CFStringGetCString(executable_cfstr, executable_buf, max_file_length, kCFStringEncodingMacRoman))           // convert CFStringRef to char*
             {
@@ -2162,10 +2175,6 @@ void LLFloaterPreference::onUpdatePopupFilter()
 
 void LLFloaterPreference::refreshEnabledState()
 {
-#if ADDRESS_SIZE == 32
-    childSetEnabled("FSRestrictMaxTextureSize", false);
-#endif
-
     if (!LLFeatureManager::getInstance()->isFeatureAvailable("RenderCompressTextures"))
     {
         getChildView("texture compression")->setEnabled(false);
@@ -2343,12 +2352,14 @@ void LLFloaterPreference::refresh()
     LLPanel::refresh();
 
     // <FS:Ansariel> Improved graphics preferences
-    getChild<LLUICtrl>("fsaa")->setValue((LLSD::Integer)  gSavedSettings.getU32("RenderFSAASamples"));
+    getChild<LLUICtrl>("fsaa")->setValue((LLSD::Integer)  gSavedSettings.getU32("RenderFSAAType"));
     updateSliderText(getChild<LLSliderCtrl>("RenderPostProcess",    true), getChild<LLTextBox>("PostProcessText",           true));
     LLAvatarComplexityControls::setIndirectControls();
-    setMaxNonImpostorsText(gSavedSettings.getU32("RenderAvatarMaxNonImpostors"),getChild<LLTextBox>("IndirectMaxNonImpostorsText", true));
     // </FS:Ansariel>
 
+    setMaxNonImpostorsText(
+        gSavedSettings.getU32("RenderAvatarMaxNonImpostors"),
+        getChild<LLTextBox>("IndirectMaxNonImpostorsText", true));
     LLAvatarComplexityControls::setText(
         gSavedSettings.getU32("RenderAvatarMaxComplexity"),
         getChild<LLTextBox>("IndirectMaxComplexityText", true));
@@ -2651,7 +2662,6 @@ void LLFloaterPreference::setPersonalInfo(const std::string& visibility, bool im
     getChild<LLUICtrl>("voice_call_friends_only_check")->setValue(gSavedPerAccountSettings.getBOOL("VoiceCallsFriendsOnly"));
 }
 
-
 void LLFloaterPreference::refreshUI()
 {
     refresh();
@@ -2684,34 +2694,6 @@ void LLFloaterPreference::updateSliderText(LLSliderCtrl* ctrl, LLTextBox* text_b
     else
     {
         text_box->setText(LLTrans::getString("GraphicsQualityHigh"));
-    }
-}
-
-void LLFloaterPreference::updateMaxNonImpostors()
-{
-    // Called when the IndirectMaxNonImpostors control changes
-    // Responsible for fixing the slider label (IndirectMaxNonImpostorsText) and setting RenderAvatarMaxNonImpostors
-    LLSliderCtrl* ctrl = getChild<LLSliderCtrl>("IndirectMaxNonImpostors",true);
-    U32 value = ctrl->getValue().asInteger();
-
-    if (0 == value || LLVOAvatar::NON_IMPOSTORS_MAX_SLIDER <= value)
-    {
-        value=0;
-    }
-    gSavedSettings.setU32("RenderAvatarMaxNonImpostors", value);
-    LLVOAvatar::updateImpostorRendering(value); // make it effective immediately
-    setMaxNonImpostorsText(value, getChild<LLTextBox>("IndirectMaxNonImpostorsText"));
-}
-
-void LLFloaterPreference::setMaxNonImpostorsText(U32 value, LLTextBox* text_box)
-{
-    if (0 == value)
-    {
-        text_box->setText(LLTrans::getString("no_limit"));
-    }
-    else
-    {
-        text_box->setText(llformat("%d", value));
     }
 }
 
@@ -2791,6 +2773,44 @@ void LLAvatarComplexityControls::setRenderTimeText(F32 value, LLTextBox* text_bo
     else
     {
         text_box->setText(llformat("%.0f", value));
+    }
+}
+
+void LLFloaterPreference::updateMaxNonImpostors()
+{
+    // Called when the IndirectMaxNonImpostors control changes
+    // Responsible for fixing the slider label (IndirectMaxNonImpostorsText) and setting RenderAvatarMaxNonImpostors
+    LLSliderCtrl* ctrl = getChild<LLSliderCtrl>("IndirectMaxNonImpostors", true);
+    U32 value = ctrl->getValue().asInteger();
+
+    if (0 == value || LLVOAvatar::NON_IMPOSTORS_MAX_SLIDER <= value)
+    {
+        value = 0;
+    }
+    gSavedSettings.setU32("RenderAvatarMaxNonImpostors", value);
+    LLVOAvatar::updateImpostorRendering(value); // make it effective immediately
+    setMaxNonImpostorsText(value, getChild<LLTextBox>("IndirectMaxNonImpostorsText"));
+}
+
+void LLFloaterPreference::updateIndirectMaxNonImpostors(const LLSD& newvalue)
+{
+    U32 value = newvalue.asInteger();
+    if ((value != 0) && (value != gSavedSettings.getU32("IndirectMaxNonImpostors")))
+    {
+        gSavedSettings.setU32("IndirectMaxNonImpostors", value);
+    }
+    setMaxNonImpostorsText(value, getChild<LLTextBox>("IndirectMaxNonImpostorsText"));
+}
+
+void LLFloaterPreference::setMaxNonImpostorsText(U32 value, LLTextBox* text_box)
+{
+    if (0 == value)
+    {
+        text_box->setText(LLTrans::getString("no_limit"));
+    }
+    else
+    {
+        text_box->setText(llformat("%d", value));
     }
 }
 
@@ -3203,7 +3223,21 @@ void LLFloaterPreference::selectChatPanel()
 
 void LLFloaterPreference::changed()
 {
+    if (LLConversationLog::instance().getIsLoggingEnabled())
+    {
     getChild<LLButton>("clear_log")->setEnabled(LLConversationLog::instance().getConversations().size() > 0);
+    }
+    else
+    {
+        // onClearLog clears list, then notifies changed() and only then clears file,
+        // so check presence of conversations before checking file, file will cleared later.
+        llstat st;
+        bool has_logs = LLConversationLog::instance().getConversations().size() > 0
+                        && LLFile::stat(LLConversationLog::instance().getFileName(), &st) == 0
+                        && S_ISREG(st.st_mode)
+                        && st.st_size > 0;
+        getChild<LLButton>("clear_log")->setEnabled(has_logs);
+    }
 
     // set 'enable' property for 'Delete transcripts...' button
     updateDeleteTranscriptsButton();
@@ -6281,6 +6315,13 @@ FSPanelPreferenceSounds::FSPanelPreferenceSounds() :
     LLPanelPreference(),
     mOutputDevicePanel(nullptr),
     mOutputDeviceComboBox(nullptr),
+    mMoapInteractionAll(nullptr),
+    mMoapInteractionAny(nullptr),
+    mMoapInteractionHud(nullptr),
+    mMoapInteractionOwnObjects(nullptr),
+    mMoapInteractionGroupObjects(nullptr),
+    mMoapInteractionFriendObjects(nullptr),
+    mMoapInteractionLandownerObjects(nullptr),
     mOutputDeviceListChangedConnection()
 { }
 
@@ -6296,6 +6337,14 @@ bool FSPanelPreferenceSounds::postBuild()
 {
     mOutputDevicePanel = findChild<LLPanel>("output_device_settings_panel");
     mOutputDeviceComboBox = findChild<LLComboBox>("sound_output_device");
+
+    mMoapInteractionAll              = getChild<LLCheckBoxCtrl>("media_first_click_all");
+    mMoapInteractionAny              = getChild<LLCheckBoxCtrl>("media_first_click_any");
+    mMoapInteractionHud              = getChild<LLCheckBoxCtrl>("media_first_click_hud");
+    mMoapInteractionOwnObjects       = getChild<LLCheckBoxCtrl>("media_first_click_own");
+    mMoapInteractionGroupObjects     = getChild<LLCheckBoxCtrl>("media_first_click_group");
+    mMoapInteractionFriendObjects    = getChild<LLCheckBoxCtrl>("media_first_click_friend");
+    mMoapInteractionLandownerObjects = getChild<LLCheckBoxCtrl>("media_first_click_land");
 
 #if LL_FMODSTUDIO
     if (gAudiop && mOutputDevicePanel && mOutputDeviceComboBox)
@@ -6313,6 +6362,17 @@ bool FSPanelPreferenceSounds::postBuild()
         mOutputDevicePanel->setVisible(false);
     }
 #endif
+
+    mMoapInteractionAll->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionAny->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionHud->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionOwnObjects->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionGroupObjects->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionFriendObjects->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+    mMoapInteractionLandownerObjects->setCommitCallback(boost::bind(&FSPanelPreferenceSounds::updateMoapInteractionSetting, this));
+
+    gSavedSettings.getControl("MediaFirstClickInteract")->getSignal()->connect(boost::bind(&FSPanelPreferenceSounds::onMoapInteractionChanged, this));
+    onMoapInteractionChanged();
 
     return LLPanelPreference::postBuild();
 }
@@ -6369,5 +6429,49 @@ void FSPanelPreferenceSounds::onOutputDeviceListChanged(LLAudioEngine::output_de
     }
 
     mOutputDeviceComboBox->setSelectedByValue(selected_device, true);
+}
+
+void FSPanelPreferenceSounds::onMoapInteractionChanged()
+{
+    const auto bitvalue = gSavedSettings.getS32("MediaFirstClickInteract");
+
+    mMoapInteractionAll->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_BYPASS_MOAP_FLAG);
+    mMoapInteractionAny->set((bitvalue & LLToolPie::MEDIA_FIRST_CLICK_ANY) == LLToolPie::MEDIA_FIRST_CLICK_ANY);
+    mMoapInteractionHud->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_HUD);
+    mMoapInteractionOwnObjects->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_OWN);
+    mMoapInteractionGroupObjects->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_GROUP);
+    mMoapInteractionFriendObjects->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_FRIEND);
+    mMoapInteractionLandownerObjects->set(bitvalue & LLToolPie::MEDIA_FIRST_CLICK_LAND);
+
+    const bool is_all_selected = (bitvalue & LLToolPie::MEDIA_FIRST_CLICK_BYPASS_MOAP_FLAG) == LLToolPie::MEDIA_FIRST_CLICK_BYPASS_MOAP_FLAG;
+    const bool is_any_selected = (bitvalue & LLToolPie::MEDIA_FIRST_CLICK_ANY) == LLToolPie::MEDIA_FIRST_CLICK_ANY;
+    mMoapInteractionAny->setEnabled(!is_all_selected);
+    mMoapInteractionHud->setEnabled(!is_all_selected && !is_any_selected);
+    mMoapInteractionOwnObjects->setEnabled(!is_all_selected && !is_any_selected);
+    mMoapInteractionGroupObjects->setEnabled(!is_all_selected && !is_any_selected);
+    mMoapInteractionFriendObjects->setEnabled(!is_all_selected && !is_any_selected);
+    mMoapInteractionLandownerObjects->setEnabled(!is_all_selected && !is_any_selected);
+}
+
+void FSPanelPreferenceSounds::updateMoapInteractionSetting()
+{
+    if (mMoapInteractionAll->get())
+    {
+        gSavedSettings.setS32("MediaFirstClickInteract", LLToolPie::MEDIA_FIRST_CLICK_BYPASS_MOAP_FLAG | LLToolPie::MEDIA_FIRST_CLICK_ANY);
+    }
+    else if (mMoapInteractionAny->get())
+    {
+        gSavedSettings.setS32("MediaFirstClickInteract", LLToolPie::MEDIA_FIRST_CLICK_ANY);
+    }
+    else
+    {
+        const S32 value = (mMoapInteractionHud->get() ? LLToolPie::MEDIA_FIRST_CLICK_HUD : 0) |
+                          (mMoapInteractionOwnObjects->get() ? LLToolPie::MEDIA_FIRST_CLICK_OWN : 0) |
+                          (mMoapInteractionGroupObjects->get() ? LLToolPie::MEDIA_FIRST_CLICK_GROUP : 0) |
+                          (mMoapInteractionFriendObjects->get() ? LLToolPie::MEDIA_FIRST_CLICK_FRIEND : 0) |
+                          (mMoapInteractionLandownerObjects->get() ? LLToolPie::MEDIA_FIRST_CLICK_LAND : 0);
+
+        gSavedSettings.setS32("MediaFirstClickInteract", value);
+    }
 }
 // </FS:Ansariel>

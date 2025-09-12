@@ -3,9 +3,6 @@
 	<string name="SUPPORT_SITE">
 		Portal Pomocy Firestorma
 	</string>
-	<string name="StartupDetectingHardware">
-		Detekcja konfiguracji sprzętowej...
-	</string>
 	<string name="StartupLoading">
 		Ładowanie przeglądarki [APP_NAME]...
 	</string>
@@ -392,6 +389,18 @@ Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
 	<string name="SocialFlickrErrorDisconnecting">
 		Problem z rozłączaniem z Flickr
 	</string>
+	<string name="SocialPrimfeedConnecting">
+		Łączenie z Primfeed...
+	</string>
+	<string name="SocialPrimfeedNotAuthorized">
+		Brak uprawnień...
+	</string>
+	<string name="SocialPrimfeedPosting">
+		Wysyłanie...
+	</string>
+	<string name="SocialPrimfeedErrorPosting">
+		Problem z wysyłaniem na Primfeed
+	</string>
 	<string name="BlackAndWhite">
 		Czerń i biel
 	</string>
@@ -608,6 +617,9 @@ Jeśli myślisz, że to błąd skontaktuj się z support@secondlife.com
 	</string>
 	<string name="TooltipCantCreateOutfit">
 		Jeden lub więcej przedmiotów nie może być użyty w "Strojach"
+	</string>
+	<string name="TooltipCantMoveOutfitIntoOutfit">
+		Nie można przenieść stroju do innego stroju
 	</string>
 	<string name="TooltipDragOntoOwnChild">
 		Nie możesz przenieść folderu do jego obiektu podrzędnego
@@ -1375,6 +1387,9 @@ https://www.firestormviewer.org/support aby uzyskać pomoc.
 	<string name="collada_files">
 		Modele COLLADA
 	</string>
+	<string name="model_files">
+		Modele meszowe
+	</string>
 	<string name="csv_files">
 		Wartości oddzielone przecinkami
 	</string>
@@ -1663,8 +1678,11 @@ https://www.firestormviewer.org/support aby uzyskać pomoc.
 	<string name="InventoryNoMatchingRecentItems">
 		Nie udało Ci się znaleźć tego, czego szukasz? Spróbuj [secondlife:///app/inventory/filters Filtrowania].
 	</string>
+	<string name="InventoryNoMatchingFavorites">
+		Nie oznaczyłeś/aś jeszcze żadnych elementów jako ulubione.
+	</string>
 	<string name="PlacesNoMatchingItems">
-		Nie udało Ci się znaleźć tego, czego szukasz? Spróbuj [secondlife:///app/search/places/[SEARCH_TERM] Wyszukiwarki].
+		Aby dodać miejsce do landmarków, kliknij gwiazdkę po prawej stronie nazwy lokalizacji.
 	</string>
 	<string name="FavoritesNoMatchingItems">
 		Przeciągnij landmark tutaj aby dodać go do swoich ulubionych.
@@ -1943,10 +1961,13 @@ Jeśli ciągle otrzymujesz tą wiadomość, to skontaktuj się z pomocą technic
 	<string name="InvFolder Gestures">
 		Gesty
 	</string>
-	<string name="InvFolder Favorites">
+	<string name="InvFolder Favorite">
 		Ulubione
 	</string>
 	<string name="InvFolder favorite">
+		Ulubione
+	</string>
+	<string name="InvFolder Favorites">
 		Ulubione
 	</string>
 	<string name="InvFolder favorites">
@@ -4751,6 +4772,10 @@ Zainstaluj ponownie przeglądarkę z [DOWNLOAD_URL] i skontaktuj się z [SUPPORT
 	<string name="inventory_item_offered_rlv">
 		Zaoferowano przedmiot dla [NAME]
 	</string>
+	<string name="bot_warning">
+		Rozmawiasz z botem [NAME]. Nie udostępniaj żadnych danych osobowych.
+Dowiedz się więcej na https://second.life/scripted-agents.
+	</string>
 	<string name="share_alert">
 		Przeciągaj tutaj rzeczy z Szafy
 	</string>
@@ -5133,6 +5158,9 @@ Raport o Nadużyciu
 	<string name="DefaultMimeType">
 		brak/brak
 	</string>
+	<string name="texture_load_area_error">
+		Nie można wczytać obrazów większych niż [PIXELS] pikseli.
+	</string>
 	<string name="texture_load_dimensions_error">
 		Nie można załadować obrazów większych niż [WIDTH]*[HEIGHT]
 	</string>
@@ -5323,7 +5351,7 @@ Spróbuj załączyć ścieżkę do edytora w cytowaniu.
 		Wygląd
 	</string>
 	<string name="Command_Avatar_Label">
-		Biblioteka awatarów
+		Paczka powitalna awatarów
 	</string>
 	<string name="Command_Build_Label">
 		Buduj
@@ -5498,6 +5526,9 @@ Spróbuj załączyć ścieżkę do edytora w cytowaniu.
 	</string>
 	<string name="Command_Poser_Tooltip">
 		Ustaw swojego awatara oraz animowane obiekty
+	</string>
+	<string name="Command_Primfeed_Tooltip">
+		Publikuj bezpośrednio na swoim koncie Primfeed.
 	</string>
 	<string name="Command_360_Capture_Tooltip">
 		Uchwyć równoprostokątny obraz 360°
@@ -6626,5 +6657,17 @@ Twoja aktualna pozycja: [AVATAR_POS]
 	</string>
 	<string name="Unlimited">
 		Bez ograniczeń
+	</string>
+	<string name="ListEmpty">
+		Lista jest pusta
+	</string>
+	<string name="NoValidUUIDs">
+		Nie znaleziono prawidłowych identyfikatorów UUID w importowanym pliku.
+	</string>
+	<string name="ImportListTooLarge">
+		Zbyt wiele rekordów. Plik CSV ma [COUNT] rekordów, ale jest dostępnych [MAX] slotów.
+	</string>
+	<string name="ImportSuccessful">
+		Pomyślnie przetworzono [COUNT] rekordów.
 	</string>
 </strings>

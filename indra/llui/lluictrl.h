@@ -39,9 +39,9 @@
 #include "llviewmodel.h"        // *TODO move dependency to .cpp file
 #include "llsearchablecontrol.h"
 
-const bool TAKE_FOCUS_YES = true;
-const bool TAKE_FOCUS_NO  = false;
-const S32 DROP_SHADOW_FLOATER = 5;
+constexpr bool TAKE_FOCUS_YES = true;
+constexpr bool TAKE_FOCUS_NO  = false;
+constexpr S32 DROP_SHADOW_FLOATER = 5;
 
 class LLUICtrl
     : public LLView, public boost::signals2::trackable
@@ -237,6 +237,11 @@ public:
 
     void                setTransparencyType(ETypeTransparency type);
     ETypeTransparency   getTransparencyType() const {return mTransparencyType;}
+
+    // <FS:TJ> Allow any UICtrl to override the transparency with a callback
+    boost::function<F32(ETypeTransparency, F32)> mTransparencyOverrideCallback;
+    virtual void setTransparencyOverrideCallback(boost::function<F32(ETypeTransparency, F32)> cb) { mTransparencyOverrideCallback = cb; }
+    // </FS:TJ>
 
     bool    focusNextItem(bool text_entry_only);
     bool    focusPrevItem(bool text_entry_only);

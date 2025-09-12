@@ -1352,26 +1352,39 @@ U32 LLTextureCache::openAndReadEntries(std::vector<Entry>& entries)
     }
     for (U32 idx=0; idx<num_entries; idx++)
     {
-        Entry entry;
-        S32 bytes_read = aprfile->read((void*)(&entry), (S32)sizeof(Entry));
-        if (bytes_read < sizeof(Entry))
+        try
         {
-            LL_WARNS() << "Corrupted header entries, failed at " << idx << " / " << num_entries << LL_ENDL;
+            Entry entry;
+            S32 bytes_read = aprfile->read((void*)(&entry), (S32)sizeof(Entry));
+            if (bytes_read < sizeof(Entry))
+            {
+                LL_WARNS() << "Corrupted header entries, failed at " << idx << " / " << num_entries << LL_ENDL;
+                closeHeaderEntriesFile();
+                return 0;
+            }
+            entries.push_back(entry);
+            //      LL_INFOS() << "ENTRY: " << entry.mTime << " TEX: " << entry.mID << " IDX: " << idx << " Size: " << entry.mImageSize << LL_ENDL;
+            if (entry.mImageSize > entry.mBodySize)
+            {
+                mHeaderIDMap[entry.mID] = idx;
+                mTexturesSizeMap[entry.mID] = entry.mBodySize;
+                mTexturesSizeTotal += entry.mBodySize;
+            }
+            else
+            {
+                mFreeList.insert(idx);
+            }
+        }
+        catch (std::bad_alloc&)
+        {
+            // Too little ram yet very large cache?
+            // Should this actually crash viewer?
+            entries.clear();
+            LL_WARNS() << "Bad alloc trying to read texture entries from cache, mFreeList: " << (S32)mFreeList.size()
+                << ", added entries: " << idx << ", total entries: " << num_entries << LL_ENDL;
             closeHeaderEntriesFile();
             purgeAllTextures(false);
             return 0;
-        }
-        entries.push_back(entry);
-//      LL_INFOS() << "ENTRY: " << entry.mTime << " TEX: " << entry.mID << " IDX: " << idx << " Size: " << entry.mImageSize << LL_ENDL;
-        if(entry.mImageSize > entry.mBodySize)
-        {
-            mHeaderIDMap[entry.mID] = idx;
-            mTexturesSizeMap[entry.mID] = entry.mBodySize;
-            mTexturesSizeTotal += entry.mBodySize;
-        }
-        else
-        {
-            mFreeList.insert(idx);
         }
     }
     closeHeaderEntriesFile();
@@ -2081,6 +2094,30 @@ LLPointer<LLImageRaw> LLTextureCache::readFromFastCache(const LLUUID& id, S32& d
         closeFastCache();
     }
     LLPointer<LLImageRaw> raw = new LLImageRaw(data, head[0], head[1], head[2], true);
+
+    // <FS:minerjr>
+    // This fixes the invalid discard values from being created which cause the decoder code to fail when trying to handle 6 and 7's which are above the MAX_DISCARD_LEVEL of 5
+    // especially on load
+    // We will expand the 16x16 texture to the actual MAX_DISCARD_LEVEL texture size, it may be blurry until the user gets closer but 5 discard value should be objects far from the camera.
+    // So a 1024x1024 texture with a dicard of 6 will become 32x32 and a 2048x2048 texture with a discard of 7 will become a 64x64 texture.
+    if (discardlevel > MAX_DISCARD_LEVEL)
+    {
+        LL_PROFILE_ZONE_NAMED_CATEGORY_TEXTURE("FixBadDiscardLevel");
+
+        S32 w = head[0]; // Get the current width from the header (16)
+        S32 h = head[1]; // Get the current height from the header (16)
+
+        // Expand the width and height by teh difference between the discard and MAX_DISCARD_LEVEL bit shifted to the left. (Expand power of 2 textures)
+        w <<= discardlevel - MAX_DISCARD_LEVEL;
+        h <<= discardlevel - MAX_DISCARD_LEVEL;
+
+        // Set the discard level to the MAX_DISCARD_LEVEL
+        discardlevel = MAX_DISCARD_LEVEL;
+
+        // Scale up the texture and scale the actual data, as we just created it above, it should be fine.
+        raw->scale(w, h, true);
+    }
+    // </FS:minerjr>
 
     return raw;
 }

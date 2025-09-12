@@ -29,6 +29,7 @@
 #include <iostream>
 #include <map>
 #include <algorithm>
+#include <atomic>
 
 #include "lltexturefetch.h"
 
@@ -2754,7 +2755,7 @@ LLTextureFetch::~LLTextureFetch()
 }
 
 S32 LLTextureFetch::createRequest(FTType f_type, const std::string& url, const LLUUID& id, const LLHost& host, F32 priority,
-                                   S32 w, S32 h, S32 c, S32 desired_discard, bool needs_aux, bool can_use_http)
+    S32 w, S32 h, S32 c, S32 desired_discard, bool needs_aux, bool can_use_http)
 {
     LL_PROFILE_ZONE_SCOPED;
     if (mDebugPause)
@@ -2766,13 +2767,13 @@ S32 LLTextureFetch::createRequest(FTType f_type, const std::string& url, const L
     {
         LL_DEBUGS("Avatar") << " requesting " << id << " " << w << "x" << h << " discard " << desired_discard << " type " << f_type << LL_ENDL;
     }
-    LLTextureFetchWorker* worker = getWorker(id) ;
+    LLTextureFetchWorker* worker = getWorker(id);
     if (worker)
     {
         if (worker->mHost != host)
         {
             LL_WARNS(LOG_TXT) << "LLTextureFetch::createRequest " << id << " called with multiple hosts: "
-                              << host << " != " << worker->mHost << LL_ENDL;
+                << host << " != " << worker->mHost << LL_ENDL;
             removeRequest(worker, true);
             worker = NULL;
             return CREATE_REQUEST_ERROR_MHOSTS;
@@ -2808,7 +2809,7 @@ S32 LLTextureFetch::createRequest(FTType f_type, const std::string& url, const L
         // we really do get it.)
         desired_size = MAX_IMAGE_DATA_SIZE;
     }
-    else if (w*h*c > 0)
+    else if (w * h * c > 0)
     {
         // If the requester knows the dimensions of the image,
         // this will calculate how much data we need without having to parse the header
@@ -2866,12 +2867,12 @@ S32 LLTextureFetch::createRequest(FTType f_type, const std::string& url, const L
         worker->lockWorkMutex();                                        // +Mw
         worker->mActiveCount++;
         worker->mNeedsAux = needs_aux;
-        worker->setCanUseHTTP(can_use_http) ;
+        worker->setCanUseHTTP(can_use_http);
         worker->unlockWorkMutex();                                      // -Mw
     }
 
     LL_DEBUGS(LOG_TXT) << "REQUESTED: " << id << " f_type " << fttype_to_string(f_type)
-                       << " Discard: " << desired_discard << " size " << desired_size << LL_ENDL;
+        << " Discard: " << desired_discard << " size " << desired_size << LL_ENDL;
     return desired_discard;
 }
 
@@ -3156,7 +3157,7 @@ bool LLTextureFetch::getRequestFinished(const LLUUID& id, S32& discard_level, S3
 bool LLTextureFetch::updateRequestPriority(const LLUUID& id, F32 priority)
 {
     LL_PROFILE_ZONE_SCOPED;
-    mRequestQueue.tryPost([=]()
+    mRequestQueue.tryPost([=, this]()
         {
             LLTextureFetchWorker* worker = getWorker(id);
             if (worker)
@@ -4274,29 +4275,30 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
     //if (! gViewerAssetStatsThread1)
     //  return true;
 
-    static volatile bool reporting_started(false);
-    static volatile S32 report_sequence(0);
+    static std::atomic<bool> reporting_started(false);
+    static std::atomic<S32> report_sequence(0);
 
     // In mStatsSD, we have a copy we own of the LLSD representation
     // of the asset stats. Add some additional fields and ship it off.
 
     static const S32 metrics_data_version = 2;
 
-    bool initial_report = !reporting_started;
+    bool initial_report = !reporting_started.load();
     mStatsSD["session_id"] = mSessionID;
     mStatsSD["agent_id"] = mAgentID;
     mStatsSD["message"] = "ViewerAssetMetrics";
-    mStatsSD["sequence"] = report_sequence;
+    mStatsSD["sequence"] = report_sequence.load();
     mStatsSD["initial"] = initial_report;
     mStatsSD["version"] = metrics_data_version;
     mStatsSD["break"] = static_cast<bool>(LLTextureFetch::svMetricsDataBreak);
 
     // Update sequence number
-    if (S32_MAX == ++report_sequence)
+    if (S32_MAX == report_sequence.fetch_add(1))
     {
-        report_sequence = 0;
+        report_sequence.store(0);
     }
-    reporting_started = true;
+
+    reporting_started.store(true);
 
     // Limit the size of the stats report if necessary.
 

@@ -15,6 +15,9 @@ include(CMakeCopyIfDifferent)
 include(CubemapToEquirectangularJS)
 include(GLIB)
 include(DragDrop)
+if (USE_DISCORD)
+  include(Discord)
+endif ()
 include(EXPAT)
 include(FMODSTUDIO)
 include(GLOD) # <FS:Beq/> restore GLOD
@@ -54,7 +57,7 @@ include(jemalloc)
 include(Discord)
 
 # <FS:ND> if using ndPhysicsstub this variable will be unset, we don't need to build any stub code viewer side in that case
-if( LLPHYSICSEXTENSIONS_SRC_DIR )
+if (LLPHYSICSEXTENSIONS_SRC_DIR)
 # </FS:ND>
 
 if (NOT HAVOK_TPV)
@@ -81,7 +84,7 @@ if (NOT HAVOK_TPV)
 endif (NOT HAVOK_TPV)
 
 # <FS:ND>
-endif( LLPHYSICSEXTENSIONS_SRC_DIR )
+endif (LLPHYSICSEXTENSIONS_SRC_DIR)
 # </FS:ND>
 
 set(viewer_SOURCE_FILES
@@ -96,6 +99,7 @@ set(viewer_SOURCE_FILES
     dialogstack.cpp
     exoflickr.cpp
     exoflickrauth.cpp
+    fsprimfeedauth.cpp
     exogroupmutelist.cpp
     floatermedialists.cpp
     fsareasearch.cpp
@@ -127,7 +131,7 @@ set(viewer_SOURCE_FILES
     fsfloaternearbychat.cpp
     fsfloaterpartialinventory.cpp
     fsfloaterplacedetails.cpp
-	fsfloaterposer.cpp
+    fsfloaterposer.cpp
     fsfloaterposestand.cpp
     fsfloaterprotectedfolders.cpp
     fsfloaterradar.cpp
@@ -140,12 +144,13 @@ set(viewer_SOURCE_FILES
     fsfloatervramusage.cpp
     fsfloaterwearablefavorites.cpp
     fsfloaterwhitelisthelper.cpp
-	fsjointpose.cpp
+    fsjointpose.cpp
     fskeywords.cpp
     fslslbridge.cpp
     fslslbridgerequest.cpp
     fslslpreproc.cpp
     fslslpreprocviewer.cpp
+    fsmaniprotatejoint.cpp
     fsmoneytracker.cpp
     fsnamelistavatarmenu.cpp
     fsnearbychatbarlistener.cpp
@@ -161,8 +166,9 @@ set(viewer_SOURCE_FILES
     fspanelradar.cpp
     fsparticipantlist.cpp
     fspose.cpp
-	fsposeranimator.cpp
-	fsposingmotion.cpp
+    fsposeranimator.cpp
+    fsposingmotion.cpp
+    fsprimfeedauth.cpp
     fsradar.cpp
     fsradarentry.cpp
     fsradarlistctrl.cpp
@@ -171,7 +177,7 @@ set(viewer_SOURCE_FILES
     fsscriptlibrary.cpp
     fsscrolllistctrl.cpp
     fsslurlcommand.cpp
-	fsvirtualtrackpad.cpp
+    fsvirtualtrackpad.cpp
     fsworldmapmessage.cpp
     lggbeamcolormapfloater.cpp
     lggbeammapfloater.cpp
@@ -181,6 +187,8 @@ set(viewer_SOURCE_FILES
     lfsimfeaturehandler.cpp
     llflickrconnect.cpp
     llfloaterflickr.cpp
+    fsprimfeedconnect.cpp
+    fsfloaterprimfeed.cpp
     llpanelopenregionsettings.cpp
     # <FS:Ansariel> [Legacy Bake]
     llagentwearablesfetch.cpp
@@ -189,10 +197,13 @@ set(viewer_SOURCE_FILES
     vjlocalmeshimportdae.cpp
 
     gltfscenemanager.cpp
-    gltf/asset.cpp
-    gltf/accessor.cpp
-    gltf/primitive.cpp
-    gltf/animation.cpp
+    # <FS:Ansariel> Group GLTF files into their subfolders
+    #gltf/asset.cpp
+    #gltf/accessor.cpp
+    #gltf/primitive.cpp
+    #gltf/animation.cpp
+    #gltf/llgltfloader.cpp
+    # </FS:Ansariel> Group GLTF files into their subfolders
     groupchatlistener.cpp
     llaccountingcostmanager.cpp
     llaisapi.cpp
@@ -209,6 +220,7 @@ set(viewer_SOURCE_FILES
     llagentwearables.cpp
     llanimstatelabels.cpp
     llappcorehttp.cpp
+    llappearancelistener.cpp
     llappearancemgr.cpp
     llappviewer.cpp
     llappviewerlistener.cpp
@@ -273,6 +285,7 @@ set(viewer_SOURCE_FILES
     lldrawpooltree.cpp
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
+    lldrawpoolwaterexclusion.cpp
     lldynamictexture.cpp
     llemote.cpp
     llenvironment.cpp
@@ -293,11 +306,11 @@ set(viewer_SOURCE_FILES
     llflexibleobject.cpp
     llfloater360capture.cpp
     llfloaterabout.cpp
+    llfloateravatarwelcomepack.cpp
     llfloaterbvhpreview.cpp
     llfloateraddpaymentmethod.cpp
     llfloaterauction.cpp
     llfloaterautoreplacesettings.cpp
-    llfloateravatar.cpp
     llfloateravatarpicker.cpp
     llfloateravatarrendersettings.cpp
     llfloateravatartextures.cpp
@@ -316,6 +329,7 @@ set(viewer_SOURCE_FILES
     llfloatercamera.cpp
     llfloatercamerapresets.cpp
     llfloaterchangeitemthumbnail.cpp
+    llfloaterchatmentionpicker.cpp
     llfloaterchatvoicevolume.cpp
     llfloaterclassified.cpp
     llfloatercolorpicker.cpp
@@ -411,6 +425,7 @@ set(viewer_SOURCE_FILES
     llfloatersettingscolor.cpp
     llfloatersettingsdebug.cpp
     llfloatersidepanelcontainer.cpp
+    llfloaterslapptest.cpp
     llfloatersnapshot.cpp
     llfloatersounddevices.cpp
     llfloaterspellchecksettings.cpp
@@ -455,6 +470,7 @@ set(viewer_SOURCE_FILES
     llhudeffectpointat.cpp
     llhudeffecttrail.cpp
     llhudeffectblob.cpp
+    llhudeffectresetskeleton.cpp
     llhudicon.cpp
     llhudmanager.cpp
     llhudnametag.cpp
@@ -480,6 +496,7 @@ set(viewer_SOURCE_FILES
     llinventorygallerymenu.cpp
     llinventoryicon.cpp
     llinventoryitemslist.cpp
+    llinventorylistener.cpp
     llinventorylistitem.cpp
     llinventorymodel.cpp
     llinventorymodelbackgroundfetch.cpp
@@ -876,6 +893,19 @@ set(viewer_SOURCE_FILES
     NACLfloaterexploresounds.cpp
     )
 
+# <FS:Ansariel> Group GLTF files into their subfolders
+set(viewer_GLTF_SOURCE_FILES
+    gltf/asset.cpp
+    gltf/accessor.cpp
+    gltf/primitive.cpp
+    gltf/animation.cpp
+    gltf/llgltfloader.cpp
+    )
+
+source_group("Source Files\\GLTF" FILES ${viewer_GLTF_SOURCE_FILES})
+list(APPEND viewer_SOURCE_FILES ${viewer_GLTF_SOURCE_FILES})
+# </FS:Ansariel> Group GLTF files into their subfolders
+
 if (OPENSIM)
     list(APPEND viewer_SOURCE_FILES
                 fsgridhandler.cpp
@@ -906,6 +936,7 @@ set(viewer_HEADER_FILES
     dialogstack.h
     exoflickr.h
     exoflickrauth.h
+    fsprimfeedauth.h
     exogroupmutelist.h
     floatermedialists.h
     fsareasearch.h
@@ -916,6 +947,7 @@ set(viewer_HEADER_FILES
     fsblocklistmenu.h
     fschathistory.h
     fschatoptionsmenu.h
+    fschatparticipants.h
     fsdispatchclassifiedclickthrough.h
     fscommon.h
     fsconsoleutils.h
@@ -938,7 +970,7 @@ set(viewer_HEADER_FILES
     fsfloaternearbychat.h
     fsfloaterpartialinventory.h
     fsfloaterplacedetails.h
-	fsfloaterposer.h
+    fsfloaterposer.h
     fsfloaterposestand.h
     fsfloaterprotectedfolders.h
     fsfloaterradar.h
@@ -959,6 +991,7 @@ set(viewer_HEADER_FILES
     fslslpreproc.h
     fslslpreprocviewer.h
     fsmoneytracker.h
+    fsmaniprotatejoint.h
     fsnamelistavatarmenu.h
     fsnearbychatbarlistener.h
     fsnearbychatcontrol.h
@@ -973,8 +1006,9 @@ set(viewer_HEADER_FILES
     fspanelradar.h
     fsparticipantlist.h
     fspose.h
-	fsposeranimator.h
-	fsposingmotion.h
+    fsposeranimator.h
+    fsposingmotion.h
+    fsprimfeedauth.h
     fsradar.h
     fsradarentry.h
     fsradarlistctrl.h
@@ -984,7 +1018,7 @@ set(viewer_HEADER_FILES
     fsscrolllistctrl.h
     fsslurl.h
     fsslurlcommand.h
-	fsvirtualtrackpad.h
+    fsvirtualtrackpad.h
     fsworldmapmessage.h
     lggbeamcolormapfloater.h
     lggbeammapfloater.h
@@ -994,6 +1028,8 @@ set(viewer_HEADER_FILES
     lfsimfeaturehandler.h
     llflickrconnect.h
     llfloaterflickr.h
+    fsprimfeedconnect.h
+    fsfloaterprimfeed.h
     # <FS:Ansariel> [Legacy Bake]
     llagentwearablesfetch.h
     vjlocalmesh.h
@@ -1002,11 +1038,14 @@ set(viewer_HEADER_FILES
 
     gltfscenemanager.h
     groupchatlistener.h
-    gltf/asset.h
-    gltf/accessor.h
-    gltf/buffer_util.h
-    gltf/primitive.h
-    gltf/animation.h
+    # <FS:Ansariel> Group GLTF files into their subfolders
+    #gltf/asset.h
+    #gltf/accessor.h
+    #gltf/buffer_util.h
+    #gltf/primitive.h
+    #gltf/animation.h
+    #gltf/llgltfloader.h
+    # </FS:Ansariel> Group GLTF files into their subfolders
     llaccountingcost.h
     llaccountingcostmanager.h
     llaisapi.h
@@ -1024,6 +1063,7 @@ set(viewer_HEADER_FILES
     llanimstatelabels.h
     llappcorehttp.h
     llappearance.h
+    llappearancelistener.h
     llappearancemgr.h
     llappviewer.h
     llappviewerlistener.h
@@ -1088,6 +1128,7 @@ set(viewer_HEADER_FILES
     lldrawpooltree.h
     lldrawpoolwater.h
     lldrawpoolwlsky.h
+    lldrawpoolwaterexclusion.h
     lldynamictexture.h
     llemote.h
     llenvironment.h
@@ -1108,11 +1149,11 @@ set(viewer_HEADER_FILES
     llflexibleobject.h
     llfloater360capture.h
     llfloaterabout.h
+    llfloateravatarwelcomepack.h
     llfloaterbvhpreview.h
     llfloateraddpaymentmethod.h
     llfloaterauction.h
     llfloaterautoreplacesettings.h
-    llfloateravatar.h
     llfloateravatarpicker.h
     llfloateravatarrendersettings.h
     llfloateravatartextures.h
@@ -1130,6 +1171,7 @@ set(viewer_HEADER_FILES
     llfloaterbuyland.h
     llfloatercamerapresets.h
     llfloaterchangeitemthumbnail.h
+    llfloaterchatmentionpicker.h
     llfloatercamera.h
     llfloaterchatvoicevolume.h
     llfloaterclassified.h
@@ -1229,6 +1271,7 @@ set(viewer_HEADER_FILES
     llfloatersettingscolor.h
     llfloatersettingsdebug.h
     llfloatersidepanelcontainer.h
+    llfloaterslapptest.h
     llfloatersnapshot.h
     llfloatersounddevices.h
     llfloaterspellchecksettings.h
@@ -1272,6 +1315,7 @@ set(viewer_HEADER_FILES
     llhudeffectpointat.h
     llhudeffecttrail.h
     llhudeffectblob.h
+    llhudeffectresetskeleton.h
     llhudicon.h
     llhudmanager.h
     llhudnametag.h
@@ -1296,6 +1340,7 @@ set(viewer_HEADER_FILES
     llinventorygallerymenu.h
     llinventoryicon.h
     llinventoryitemslist.h
+    llinventorylistener.h
     llinventorylistitem.h
     llinventorymodel.h
     llinventorymodelbackgroundfetch.h
@@ -1691,6 +1736,20 @@ set(viewer_HEADER_FILES
   list(APPEND viewer_SOURCE_FILES llperfstats.cpp)
   list(APPEND viewer_HEADER_FILES llperfstats.h)
 
+# <FS:Ansariel> Group GLTF files into their subfolders
+set(viewer_GLTF_HEADER_FILES
+    gltf/asset.h
+    gltf/accessor.h
+    gltf/buffer_util.h
+    gltf/primitive.h
+    gltf/animation.h
+    gltf/llgltfloader.h
+    )
+
+source_group("Header Files\\GLTF" FILES ${viewer_GLTF_HEADER_FILES})
+list(APPEND viewer_HEADER_FILES ${viewer_GLTF_HEADER_FILES})
+# </FS:Ansariel> Group GLTF files into their subfolders
+
 if (USE_BUGSPLAT)
     list(APPEND viewer_SOURCE_FILES
                 bugsplatattributes.cpp
@@ -1757,11 +1816,24 @@ if (DARWIN)
   LIST(APPEND viewer_SOURCE_FILES llfilepicker_mac.mm)
   LIST(APPEND viewer_HEADER_FILES llfilepicker_mac.h)
 
+  set_source_files_properties(
+    llappviewermacosx-objc.mm
+    PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
+  )
+
+  set_source_files_properties(
+    llfilepicker_mac.mm
+    PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
+  )
+
   # This should be compiled with the viewer.
   LIST(APPEND viewer_SOURCE_FILES llappdelegate-objc.mm)
   set_source_files_properties(
     llappdelegate-objc.mm
     PROPERTIES
+    SKIP_PRECOMPILE_HEADERS TRUE
     COMPILE_DEFINITIONS "${VIEWER_CHANNEL_VERSION_DEFINES}"
     # BugsplatMac is a module, imported with @import. That language feature
     # demands these -f switches.
@@ -1960,6 +2032,7 @@ if (WINDOWS)
         res/firestorm_icon.BMP
         res/firestorm_icon.ico
         res-sdl/firestorm_icon.BMP
+        res/ll_icon_small.ico
         res/resource.h
         res/toolpickobject.cur
         res/toolpickobject2.cur
@@ -2181,7 +2254,11 @@ list(APPEND EVENT_HOST_SCRIPTS ${EVENT_HOST_SCRIPT_GLOB_LIST})
 set(PACKAGE ON CACHE BOOL
     "Add a package target that builds an installer package.")
 
-if (OPENSIM )
+if(USE_PRECOMPILED_HEADERS)
+  target_precompile_headers( ${VIEWER_BINARY_NAME} PRIVATE llviewerprecompiledheaders.h )
+endif(USE_PRECOMPILED_HEADERS)
+
+if (OPENSIM)
   set(ND_VIEWER_FLAVOR "oss")
 else (OPENSIM)
   set(ND_VIEWER_FLAVOR "hvk")
@@ -2196,10 +2273,6 @@ if (WINDOWS)
         LINK_FLAGS_RELEASE "/FORCE:MULTIPLE /MAP\"secondlife-bin.MAP\" /OPT:REF /LARGEADDRESSAWARE /NOEXP /NOIMPLIB"
         )
     target_compile_options(${VIEWER_BINARY_NAME} PRIVATE /bigobj)
-
-    if(USE_PRECOMPILED_HEADERS)
-       target_precompile_headers( ${VIEWER_BINARY_NAME} PRIVATE llviewerprecompiledheaders.h )
-    endif(USE_PRECOMPILED_HEADERS)
 
     # If adding a file to viewer_manifest.py in the WindowsManifest.construct() method, be sure to add the dependency
     # here.
@@ -2254,6 +2327,12 @@ if (WINDOWS)
                )
     endif (ADDRESS_SIZE EQUAL 64)
 
+    if (TARGET ll::discord_sdk)
+        list(APPEND COPY_INPUT_DEPENDENCIES
+             ${SHARED_LIB_STAGING_DIR}/discord_partner_sdk.dll
+             )
+    endif ()
+
     if (TARGET ll::fmodstudio)
       list(APPEND COPY_INPUT_DEPENDENCIES
            ${SHARED_LIB_STAGING_DIR}/fmod.dll
@@ -2277,6 +2356,7 @@ if (WINDOWS)
         --arch=${ARCH}
         --artwork=${ARTWORK_DIR}
         "--bugsplat=${BUGSPLAT_DB}"
+        "--discord=${USE_DISCORD}"
         "--fmodstudio=${USE_FMODSTUDIO}"
         "--openal=${USE_OPENAL}"
         "--tracy=${USE_TRACY}"
@@ -2318,6 +2398,7 @@ if (WINDOWS)
             --arch=${ARCH}
             --artwork=${ARTWORK_DIR}
             "--bugsplat=${BUGSPLAT_DB}"
+            "--discord=${USE_DISCORD}"
             "--fmodstudio=${USE_FMODSTUDIO}"
             "--openal=${USE_OPENAL}"
             "--tracy=${USE_TRACY}"
@@ -2385,6 +2466,7 @@ if (WINDOWS)
               --arch=${ARCH}
               --artwork=${ARTWORK_DIR}
               "--bugsplat=${BUGSPLAT_DB}"
+              "--discord=${USE_DISCORD}"
               "--fmodstudio=${USE_FMODSTUDIO}"
               "--openal=${USE_OPENAL}"
               "--tracy=${USE_TRACY}"
@@ -2489,6 +2571,10 @@ target_link_libraries(${VIEWER_BINARY_NAME}
         fs::discord # <FS:Ansariel> Discord  support
         )
 
+if (USE_DISCORD)
+   target_link_libraries(${VIEWER_BINARY_NAME} ll::discord_sdk )
+endif ()
+
 if( TARGET ll::intel_memops )
    target_link_libraries(${VIEWER_BINARY_NAME} ll::intel_memops )
 endif()
@@ -2572,6 +2658,7 @@ if (LINUX)
         --arch=${ARCH}
         --artwork=${ARTWORK_DIR}
         "--bugsplat=${BUGSPLAT_DB}"
+        "--discord=${USE_DISCORD}"
         "--fmodstudio=${USE_FMODSTUDIO}"
         "--openal=${USE_OPENAL}"
         "--tracy=${USE_TRACY}"
@@ -2600,6 +2687,7 @@ if (LINUX)
       --arch=${ARCH}
       --artwork=${ARTWORK_DIR}
       "--bugsplat=${BUGSPLAT_DB}"
+      "--discord=${USE_DISCORD}"
       "--fmodstudio=${USE_FMODSTUDIO}"
       "--openal=${USE_OPENAL}"
       "--tracy=${USE_TRACY}"
@@ -2696,6 +2784,7 @@ if (DARWIN)
       --arch=${ARCH}
       --artwork=${ARTWORK_DIR}
       "--bugsplat=${BUGSPLAT_DB}"
+      "--discord=${USE_DISCORD}"
       "--fmodstudio=${USE_FMODSTUDIO}"
       "--openal=${USE_OPENAL}"
       "--tracy=${USE_TRACY}"
@@ -2734,6 +2823,7 @@ if (DARWIN)
           --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           "--bugsplat=${BUGSPLAT_DB}"
+          "--discord=${USE_DISCORD}"
           "--fmodstudio=${USE_FMODSTUDIO}"
           "--openal=${USE_OPENAL}"
           "--tracy=${USE_TRACY}"

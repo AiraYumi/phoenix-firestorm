@@ -2,7 +2,7 @@
 <panel
  border="true"
  follows="all"
- height="440"
+ height="480"
  layout="topleft"
  left="1"
  top="1"
@@ -1250,7 +1250,7 @@ If you do not understand the distinction then leave this control alone."
          layout="topleft"
          left="10"
          name="World Updating"
-         top_pad="5"
+         top_pad="2"
          width="308">
             World Updating:
         </text>
@@ -1263,7 +1263,7 @@ If you do not understand the distinction then leave this control alone."
          layout="topleft"
          left_delta="5"
          name="WorldPause"
-         top_pad="6"
+         top_pad="4"
          width="256"/>
 
          <check_box
@@ -1320,23 +1320,24 @@ If you do not understand the distinction then leave this control alone."
             Texture Rendering:
         </text>
 
-        <check_box
-         control_name="FSRestrictMaxTextureSize"
+        <text
+         type="string"
+         follows="left|top"
          height="16"
-         label="Restrict maximum texture resolution to:"
-         tool_tip="Set this restrict the maximum display resolution for inworld textures. This allows displaying more textures before exceeding the available texture memory and observing blurry textures."
          layout="topleft"
          left_delta="10"
          name="FSRestrictMaxTextureSize"
-         top_pad="4"
-         width="250"/>
+         top_pad="2"
+         width="250">
+            Restrict maximum texture resolution to:
+        </text>
 
         <combo_box
-         control_name="FSRestrictMaxTexturePixels"
-         enabled_control="FSRestrictMaxTextureSize"
+         control_name="RenderMaxTextureResolution"
          height="20"
          layout="topleft"
          left_pad="2"
+         tool_tip="Sets the maximum display resolution for inworld textures. This allows displaying more textures before exceeding the available texture memory and observing blurry textures."
          top_delta="-2"
          name="FSRestrictMaxTexturePixels"
          width="100">
@@ -1348,33 +1349,17 @@ If you do not understand the distinction then leave this control alone."
            label="1024 pixels"
            name="1024"
            value="1024"/>
-          <!-- 2048 is the current maximum, so this only becomes important if we get 4096 pixel textures
           <combo_box.item
            label="2048 pixels"
            name="2048"
            value="2048"/>
-          -->
         </combo_box>
-
-        <text
-         name="FSRestrictMaxTextureSizeRestartText"
-         type="string"
-         text_color="White_50"
-         length="1"
-         follows="left|top"
-         height="12"
-         layout="topleft"
-         left_pad="10"
-         top_delta="2"
-         width="150">
-            (requires restart)
-        </text>
 
       <!-- New Texture detail 5 is lowest, 0 is highest -->
         <text
          type="string"
          length="1"
-         top_pad="10"
+         top_pad="3"
          follows="top|left"
          height="18"
          width="150"
@@ -1431,7 +1416,7 @@ If you do not understand the distinction then leave this control alone."
          label="HDR and Emissive"
          tool_tip="Enables additional rendering pipeline features on newer machines such as HDR and emissive textures on PBR content."
          layout="topleft"
-         left_delta="10"
+         left="20"
          name="VintageMode"
          top_pad="6"
          width="256">
@@ -1445,9 +1430,9 @@ If you do not understand the distinction then leave this control alone."
          label="Render alpha masks"
          tool_tip="When ticked this makes the Alpha masks (see-thru bits) render correctly"
          layout="topleft"
-         left_delta="0"
+         left="20"
          name="RenderAutoMaskAlphaDeferred"
-         top_pad="2"
+         top_pad="-1"
          width="256"/>
         <check_box
          control_name="RenderGlow"
@@ -1458,7 +1443,7 @@ If you do not understand the distinction then leave this control alone."
          layout="topleft"
          left_delta="0"
          name="RenderGlow"
-         top_pad="2"
+         top_pad="1"
          width="256"/>
 		<slider
 		enabled_control="RenderGlow"
@@ -1487,15 +1472,16 @@ If you do not understand the distinction then leave this control alone."
          initial_value="false"
          label="Show avatars that haven't finished loading"
          layout="topleft"
-         left_delta="-240"
+         left="20"
          name="RenderUnloadedAvatars"
-         top_pad="2"
+         top_pad="1"
          width="256"/>
         <check_box
          follows="top|left"
+         height="16"
          layout="topleft"
          left="20"
-         top_pad="9"
+         top_pad="1"
          label="Show the Scene as Wireframe"
          name="Wireframe">
         <check_box.on_check
@@ -1506,9 +1492,11 @@ If you do not understand the distinction then leave this control alone."
         </check_box>
         <check_box
          follows="top|left"
+         height="16"
          layout="topleft"
          left="20"
-         top_pad="9"
+         top_pad="1"
+         width="220"
          label="Enable Attached Lights (Face Lights)"
          tool_tip="This will enable any lights, such as face lights, avatars have attached to them. Useful for turning off facelights when necessary."
          name="Render Attached Lights">
@@ -1520,10 +1508,11 @@ If you do not understand the distinction then leave this control alone."
          parameter="RenderAttachedLights"/>
         </check_box>
         <check_box
-         follows="top|left"
          layout="topleft"
          left="20"
-         top_pad="9"
+         height="16"
+         top_pad="1"
+         width="200"
          label="Render Attached Particles"
          name="Render Attached Particles">
          <check_box.on_check
@@ -1533,6 +1522,54 @@ If you do not understand the distinction then leave this control alone."
          function="Advanced.HandleAttachedLightParticles"
          parameter="RenderAttachedParticles"/>
         </check_box>
+        <check_box
+         control_name="FSDrawDistanceVRAMOptimization"
+         follows="top|left"
+         height="16"
+         layout="topleft"
+         left="20"
+         top_pad="1"
+         label="Reduce Draw Distance when VRAM is full"
+         name="Reduce Draw Distance when VRAM is full"
+         tool_tip="Enables a feature that reduces your draw distance when VRAM becomes full"/>
+        <text
+          type="string"
+          length="1"
+          follows="left|top"
+          height="16"
+          layout="topleft"
+          left="10"
+          top_pad="10"
+          width="200"
+          name="ExcludeAnimeshImposterLabel">
+            Exclude Animesh Impostor Avatar:
+        </text>
+        <combo_box
+         control_name="FSImpostorAvatarExclude"
+         height="20"
+         layout="topleft"
+         tool_tip="Allows for Animesh User or Control Avatars to be excluded from using impostor rendering."
+         left_pad="8"
+         top_delta="-4"
+         name="FSImpostorAvatarExclude"
+         width="80">
+            <combo_box.item
+             label="None"
+             name="0"
+             value="0"/>
+            <combo_box.item
+             label="User"
+             name="1"
+             value="1"/>
+            <combo_box.item
+             label="Control"
+             name="2"
+             value="2"/>
+            <combo_box.item
+             label="Both"
+             name="3"
+             value="3"/>
+        </combo_box>
         <slider
          control_name="PrecachingDelay"
          decimal_digits="0"
@@ -1548,7 +1585,7 @@ If you do not understand the distinction then leave this control alone."
          min_val="1"
          name="PrecachingDelay"
          left="10"
-         top_pad="10"
+         top_pad="5"
          width="405" />
         <text
          type="string"
@@ -1614,6 +1651,47 @@ If you do not understand the distinction then leave this control alone."
          width="405">
         </slider>
         <!-- End of Sharpening Settings-->
+        <text
+         type="string"
+         length="1"
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="10"
+         name="ReflectionProbeCount"
+         top_pad="2"
+         width="150">
+            Max. Reflection Probes:
+        </text>
+        <combo_box
+         control_name="RenderReflectionProbeCount"
+         height="20"
+         layout="topleft"
+         left_pad="10"
+         top_delta="-2"
+         name="ProbeCount"
+         width="150">
+         <combo_box.item
+          label="None"
+          name="1"
+          value="1"/>
+         <combo_box.item
+          label="Low"
+          name="32"
+          value="32"/>
+         <combo_box.item
+          label="Medium"
+          name="64"
+          value="64"/>
+         <combo_box.item
+          label="High"
+          name="128"
+          value="128"/>
+         <combo_box.item
+          label="Ultra"
+          name="256"
+          value="256"/>
+        </combo_box>
         <!-- Tone Mapping Settings -->
         <text
          type="string"
@@ -1623,7 +1701,7 @@ If you do not understand the distinction then leave this control alone."
          layout="topleft"
          left="10"
          name="TonemapTypeText"
-         top_pad="8"
+         top_pad="6"
          width="150">
             Tone Mapper:
         </text>

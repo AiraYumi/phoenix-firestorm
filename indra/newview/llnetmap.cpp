@@ -91,6 +91,8 @@
 #include "fscommon.h"
 #include "llstartup.h"
 
+#include "llviewernetwork.h" // <FS/> Access to GridManager
+
 static LLDefaultChildRegistry::Register<LLNetMap> r1("net_map");
 
 constexpr F32 LLNetMap::MAP_SCALE_MIN = 32;
@@ -316,12 +318,12 @@ void LLNetMap::draw()
     }
     // </FS:Ansariel>: Synchronize netmap scale throughout instances
 
-// <FS:Ansariel> Aurora Sim
+    // <FS:Ansariel> Aurora Sim
     if (!LLWorld::getInstance()->getAllowMinimap())
     {
         return;
     }
-// <FS:Ansariel> Aurora Sim
+    // <FS:Ansariel> Aurora Sim
 
     static LLUIColor map_avatar_color = LLUIColorTable::instance().getColor("MapAvatarColor", LLColor4::white);
     static LLUIColor map_track_color = LLUIColorTable::instance().getColor("MapTrackColor", LLColor4::white);
@@ -454,26 +456,75 @@ void LLNetMap::draw()
                 gGL.color4f(1.f, 0.5f, 0.5f, 1.f);
             }
 
-            // Draw using texture.
-            gGL.getTexUnit(0)->bind(regionp->getLand().getSTexture());
-            gGL.begin(LLRender::TRIANGLES);
+            // <FS> [FIRE-35147] OpenSim regions can be greater than 256x256 and need to be accounted for
+            if (!LLGridManager::getInstance()->isInSecondLife())
             {
-                gGL.texCoord2f(0.f, 1.f);
-                gGL.vertex2f(left, top);
-                gGL.texCoord2f(0.f, 0.f);
-                gGL.vertex2f(left, bottom);
-                gGL.texCoord2f(1.f, 0.f);
-                gGL.vertex2f(right, bottom);
+                // Fixes OpenSim race condition on grid change not having updated Grid Info yet
+                bool isAgentTeleporting = gAgent.getTeleportState() != LLAgent::TELEPORT_NONE;
+                if (!isAgentTeleporting)
+                {
+                    const LLViewerRegion::tex_matrix_t& tiles(regionp->getWorldMapTiles());
+                    for (S32 i(0), scaled_width((S32)(real_width / region_width)), square_width(scaled_width * scaled_width);
+                         i < square_width; ++i)
+                    {
+                        const F32                  y = (F32)(i / scaled_width);
+                        const F32                  x = (F32)(i - y * scaled_width);
+                        const F32                  local_left(left + x * mScale);
+                        const F32                  local_right(local_left + mScale);
+                        const F32                  local_bottom(bottom + y * mScale);
+                        const F32                  local_top(local_bottom + mScale);
+                        LLPointer<LLViewerTexture> pRegionImage = tiles[(U64)(x * scaled_width + y)];
+                        if (pRegionImage.isNull())
+                            continue;
 
-                gGL.texCoord2f(0.f, 1.f);
-                gGL.vertex2f(left, top);
-                gGL.texCoord2f(1.f, 0.f);
-                gGL.vertex2f(right, bottom);
-                gGL.texCoord2f(1.f, 1.f);
-                gGL.vertex2f(right, top);
+                        if (pRegionImage->hasGLTexture())
+                        {
+                            gGL.getTexUnit(0)->bind(pRegionImage);
+                            gGL.begin(LLRender::TRIANGLES);
+                            {
+                                gGL.texCoord2f(0.f, 1.f);
+                                gGL.vertex2f(local_left, local_top);
+                                gGL.texCoord2f(0.f, 0.f);
+                                gGL.vertex2f(local_left, local_bottom);
+                                gGL.texCoord2f(1.f, 0.f);
+                                gGL.vertex2f(local_right, local_bottom);
+
+                                gGL.texCoord2f(0.f, 1.f);
+                                gGL.vertex2f(local_left, local_top);
+                                gGL.texCoord2f(1.f, 0.f);
+                                gGL.vertex2f(local_right, local_bottom);
+                                gGL.texCoord2f(1.f, 1.f);
+                                gGL.vertex2f(local_right, local_top);
+                            }
+                            gGL.end();
+                        }
+                        pRegionImage->setBoostLevel(LLViewerTexture::BOOST_MAP_VISIBLE);
+                    }
+                }
             }
-            gGL.end();
+            // </FS>
+            else
+            {
+                // Draw using texture.
+                gGL.getTexUnit(0)->bind(regionp->getLand().getSTexture());
+                gGL.begin(LLRender::TRIANGLES);
+                {
+                    gGL.texCoord2f(0.f, 1.f);
+                    gGL.vertex2f(left, top);
+                    gGL.texCoord2f(0.f, 0.f);
+                    gGL.vertex2f(left, bottom);
+                    gGL.texCoord2f(1.f, 0.f);
+                    gGL.vertex2f(right, bottom);
 
+                    gGL.texCoord2f(0.f, 1.f);
+                    gGL.vertex2f(left, top);
+                    gGL.texCoord2f(1.f, 0.f);
+                    gGL.vertex2f(right, bottom);
+                    gGL.texCoord2f(1.f, 1.f);
+                    gGL.vertex2f(right, top);
+                }
+                gGL.end();
+            }
             gGL.flush();
         }
 
@@ -648,7 +699,9 @@ void LLNetMap::draw()
         // Draw avatars
         for (U32 i = 0; i < avatar_ids.size(); i++)
         {
-            LLUUID uuid = avatar_ids[i];
+            // <FS:Ansariel> Performance improvement
+            //LLUUID uuid = avatar_ids[i];
+            const LLUUID& uuid = avatar_ids.at(i);
             // Skip self, we'll draw it later
             if (uuid == gAgent.getID()) continue;
 
@@ -821,8 +874,8 @@ void LLNetMap::draw()
         F32 ctr_x = (F32)center_sw_left;
         F32 ctr_y = (F32)center_sw_bottom;
 
-        const F32 steps_per_circle = 40.0f;
-        const F32 steps_per_radian = steps_per_circle / F_TWO_PI;
+        constexpr F32 steps_per_circle = 40.0f;
+        constexpr F32 steps_per_radian = steps_per_circle / F_TWO_PI;
         const F32 arc_start = -(horiz_fov / 2.0f) + F_PI_BY_TWO;
         const F32 arc_end = (horiz_fov / 2.0f) + F_PI_BY_TWO;
         const S32 steps = llmax(1, (S32)((horiz_fov * steps_per_radian) + 0.5f));
@@ -1710,7 +1763,8 @@ bool LLNetMap::handleRightMouseDown(S32 x, S32 y, MASK mask)
                 LLMenuItemCallGL::Params p;
                 p.name = llformat("Profile Item %d", itAgent - mClosestAgentsToCursor.begin());
 
-                LLAvatarName avName; const LLUUID& idAgent = *itAgent;
+                LLAvatarName avName;
+                const LLUUID& idAgent = *itAgent;
                 if (LLAvatarNameCache::get(idAgent, &avName))
                 {
                     p.label = avName.getCompleteName();
@@ -1727,7 +1781,7 @@ bool LLNetMap::handleRightMouseDown(S32 x, S32 y, MASK mask)
                         }
                         mAvatarNameCacheConnections.erase(it);
                     }
-                    mAvatarNameCacheConnections[idAgent] = LLAvatarNameCache::get(idAgent, boost::bind(&LLNetMap::setAvatarProfileLabel, this, _1, _2, p.name.getValue()));
+                    mAvatarNameCacheConnections.try_emplace(idAgent, LLAvatarNameCache::get(idAgent, boost::bind(&LLNetMap::setAvatarProfileLabel, this, _1, _2, p.name.getValue())));
                 }
                 p.on_click.function = boost::bind(&LLAvatarActions::showProfile, _2);
                 p.on_click.parameter = idAgent;
@@ -1906,8 +1960,7 @@ void LLNetMap::handleClearMarks()
 // static
 bool LLNetMap::getAvatarMarkColor(const LLUUID& avatar_id, LLColor4& color)
 {
-    avatar_marks_map_t::iterator found = sAvatarMarksMap.find(avatar_id);
-    if (found != sAvatarMarksMap.end())
+    if (auto found = sAvatarMarksMap.find(avatar_id); found != sAvatarMarksMap.end())
     {
         color = found->second;
         return true;
@@ -1973,8 +2026,7 @@ LLColor4 LLNetMap::getAvatarColor(const LLUUID& avatar_id)
     cs_instance.hasFriendColorThatShouldShow(avatar_id, ContactSetType::MINIMAP, color);
 
     // Mark Avatars with special colors
-    avatar_marks_map_t::iterator found = sAvatarMarksMap.find(avatar_id);
-    if (found != sAvatarMarksMap.end())
+    if (auto found = sAvatarMarksMap.find(avatar_id); found != sAvatarMarksMap.end())
     {
         color = found->second;
     }

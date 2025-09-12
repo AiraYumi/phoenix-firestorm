@@ -18,7 +18,6 @@
 	<string name="APP_NAME_ABBR">FS</string>
 
 	<!-- starting up -->
-	<string name="StartupDetectingHardware">Detecting hardware...</string>
 	<string name="StartupLoading">Loading [APP_NAME]...</string>
 	<string name="StartupClearingCache">Clearing cache...</string>
 	<string name="StartupClearingTextureCache">Clearing texture cache...</string>
@@ -238,6 +237,10 @@ If you feel this is an error, please contact support@secondlife.com</string>
   <string name="SocialFlickrErrorConnecting">Problem connecting to Flickr</string>
   <string name="SocialFlickrErrorPosting">Problem posting to Flickr</string>
   <string name="SocialFlickrErrorDisconnecting">Problem disconnecting from Flickr</string>
+  <string name="SocialPrimfeedConnecting">Connecting to Primfeed...</string>
+  <string name="SocialPrimfeedNotAuthorized">Not Authorized...</string>
+  <string name="SocialPrimfeedPosting">Posting...</string>
+  <string name="SocialPrimfeedErrorPosting">Problem posting to Primfeed</string>
   
 	<!-- SLShare: User Friendly Filter Names Translation -->
     <string name="BlackAndWhite">Black &amp; White</string>
@@ -321,6 +324,7 @@ If you feel this is an error, please contact support@secondlife.com</string>
 	<string name="TooltipOutboxMixedStock">All items in a stock folder must have the same type and permission</string>
 	<string name="TooltipOutfitNotInInventory">You can only put items or outfits from your personal inventory into "Outfits"</string>
 	<string name="TooltipCantCreateOutfit">One or more items can't be used inside "Outfits"</string>
+    <string name="TooltipCantMoveOutfitIntoOutfit">Can not move an outfit into another outfit</string>
 	
 	<string name="TooltipDragOntoOwnChild">You can't move a folder into its child</string>
 	<string name="TooltipDragOntoSelf">You can't move a folder into itself</string>
@@ -659,6 +663,7 @@ https://www.firestormviewer.org/support for help fixing this problem.
 	<string name="dictionary_files">Dictionaries</string>
 	<string name="backup_files">Object Backups</string>
 	<string name="collada_files">COLLADA Models</string>
+	<string name="model_files">Mesh Models</string>
 	<string name="csv_files">Comma separated values</string>
 	<string name="recompile_script_verb">Recompile</string>
 
@@ -787,8 +792,9 @@ https://www.firestormviewer.org/support for help fixing this problem.
 
 	<!-- inventory -->
 	<string name="InventoryNoMatchingItems">Didn't find what you're looking for? Try [secondlife:///app/search/all/[SEARCH_TERM] Search].</string>
-	<string name="InventoryNoMatchingRecentItems">Didn't find what you're looking for? Show [secondlife:///app/inventory/filters Filters].</string>
-	<string name="PlacesNoMatchingItems">Didn't find what you're looking for? Try [secondlife:///app/search/places/[SEARCH_TERM] Search].</string>
+	<string name="InventoryNoMatchingRecentItems">Didn't find what you're looking for? Try [secondlife:///app/inventory/filters Show filters].</string>	
+  <string name="InventoryNoMatchingFavorites">You haven't marked any items as favorites.</string>
+	<string name="PlacesNoMatchingItems">To add a place to your landmarks, click the star to the right of the location name.</string>
 	<string name="FavoritesNoMatchingItems">Drag a landmark here to add it to your favorites.</string>
 	<string name="MarketplaceNoListing">You have no listings yet.</string>
 	<string name="MarketplaceNoMatchingItems">No items found. Check the spelling of your search string and try again.</string>
@@ -960,11 +966,12 @@ If you continue to receive this message, please contact Second Life support for 
 	<string name="InvFolder Uncompressed Sounds">Uncompressed Sounds</string>
 	<string name="InvFolder Animations">Animations</string>
 	<string name="InvFolder Gestures">Gestures</string>
-	<string name="InvFolder Favorites">Favorites</string>
+	<string name="InvFolder Favorite">Favorites</string>
   <!-- historically default name of the Favorites folder can start from either "f" or "F" letter.
       Also, it can be written as "Favorite" or "Favorites".
   We should localize all variants of them with the same value -->
 	<string name="InvFolder favorite">Favorites</string>
+	<string name="InvFolder Favorites">Favorites</string>
 	<string name="InvFolder favorites">Favorites</string>
 	<string name="InvFolder Current Outfit">Current Outfit</string>
 	<string name="InvFolder Initial Outfits">Initial Outfits</string>
@@ -2232,6 +2239,10 @@ Please reinstall viewer from [DOWNLOAD_URL] and contact [SUPPORT_SITE] if issue 
   <string name="inventory_item_offered_rlv">
     Inventory item offered to [NAME]
   </string>
+  <string name="bot_warning">
+  You are chatting with a bot, [NAME]. Do not share any personal information.
+Learn more at https://second.life/scripted-agents.
+  </string>
   <string name="share_alert">
     Drag items from inventory here
   </string>
@@ -2485,6 +2496,7 @@ Abuse Report</string>
   <string name="AvatarBirthDateFormat_legacy">[mthnum,datetime,slt]/[day,datetime,slt]/[year,datetime,slt]</string>
 
   <string name="DefaultMimeType">none/none</string>
+  <string name="texture_load_area_error">Can't load images larger than [PIXELS] pixels</string>
   <string name="texture_load_dimensions_error">Can't load images larger than [WIDTH]*[HEIGHT]</string>
   <string name="texture_load_format_error">Incorrect image format.</string>
   <string name="texture_load_empty_file">File is empty.</string>
@@ -2702,7 +2714,7 @@ Try enclosing path to the editor with double quotes.
 name="Command_360_Capture_Label">360° Snapshot</string>
   <string name="Command_AboutLand_Label">About land</string>
   <string name="Command_Appearance_Label">Appearance</string>
-  <string name="Command_Avatar_Label">Avatar</string>
+  <string name="Command_Avatar_Label">Avatar Welcome Pack</string>
   <string name="Command_Build_Label">Build</string>
   <string name="Command_Chat_Label">Conversations</string>
   <string name="Command_Conversations_Label">Conversations</string>
@@ -2767,6 +2779,8 @@ name="Command_360_Capture_Label">360° Snapshot</string>
   <string name="Command_Beacons_Label">Beacons</string>
   <string name="Command_Poser_Label">Poser</string>
   <string name="Command_Poser_Tooltip">Pose your avatar and animated objects</string>
+  <string name="Command_Primfeed_Label">Primfeed</string>
+  <string name="Command_Primfeed_Tooltip">Post directly to your Primfeed account.</string>
 
   <string 
 name="Command_360_Capture_Tooltip">Capture a 360° equirectangular image</string>
@@ -3310,4 +3324,10 @@ Your current position: [AVATAR_POS]
   <string name="FSObjectInventoryElements">[NUM_ELEMENTS] Elements</string>
   <string name="OpenSimInventoryValidationErrorGenericHelp">your Grid Operator's support team</string>
   <string name="Unlimited">Unlimited</string>
+
+  <string name="ListEmpty">List is empty</string>
+  <string name="NoValidUUIDs">No valid UUIDs found in the imported file.</string>
+  <string name="ImportListTooLarge">Too many entries. The CSV file has [COUNT] entries and there are [MAX] slots available.</string>
+  <string name="ImportSuccessful">Successfully processed [COUNT] entries.</string>
+
 </strings>

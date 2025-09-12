@@ -51,8 +51,10 @@
 #include "llchiclet.h"
 #include "llchicletbar.h"
 #include "llconsole.h"
+#include "llemojihelper.h"
 #include "llfloaterabout.h"     // for sysinfo button -Zi
 #include "llfloateravatarpicker.h"
+#include "llfloaterchatmentionpicker.h"
 #include "llfloateremojipicker.h"
 #include "llfloaterreg.h"
 #include "llfloatersearchreplace.h"
@@ -178,7 +180,7 @@ FSFloaterIM::FSFloaterIM(const LLUUID& session_id)
 
     // only dock when chiclets are visible, or the floater will get stuck in the top left
     // FIRE-9984 -Zi
-    bool disable_chiclets = gSavedSettings.getBOOL("FSDisableIMChiclets");
+    const bool disable_chiclets = gSavedSettings.getBOOL("FSDisableIMChiclets");
     setDocked(!disable_chiclets);
     // make sure to save position and size with chiclets disabled (torn off floater does that)
     setTornOff(disable_chiclets);
@@ -205,6 +207,10 @@ void FSFloaterIM::onFocusLost()
     LLIMModel::getInstance()->resetActiveSessionID();
 
     LLChicletBar::getInstance()->getChicletPanel()->setChicletToggleState(mSessionID, false);
+
+    LLFloaterChatMentionPicker::removeParticipantSource(this);
+
+    LLTransientDockableFloater::onFocusLost();
 }
 
 void FSFloaterIM::onFocusReceived()
@@ -217,6 +223,10 @@ void FSFloaterIM::onFocusReceived()
     {
         LLIMModel::instance().sendNoUnreadMessages(mSessionID);
     }
+
+    LLFloaterChatMentionPicker::updateParticipantSource(this);
+
+    LLTransientDockableFloater::onFocusReceived();
 }
 
 // virtual
@@ -369,7 +379,7 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
 
         if (mInputEditor)
         {
-            LLWString text = mInputEditor->getWText();
+            LLWString text = mInputEditor->getConvertedText();
             LLWStringUtil::trim(text);
             LLWStringUtil::replaceChar(text,182,'\n'); // Convert paragraph symbols back into newlines.
             if (!text.empty())
@@ -479,6 +489,10 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
                             {
                                 str_version_tag = "Release";
                             }
+                            else if( viewer_maturity == LLVersionInfo::FSViewerMaturity::STREAMING_VIEWER )
+                            {
+                                str_version_tag = "Streaming";
+                            }
                             else if( viewer_maturity == LLVersionInfo::FSViewerMaturity::UNOFFICIAL_VIEWER )
                             {
                                 str_version_tag = "Unofficial";
@@ -501,6 +515,10 @@ void FSFloaterIM::sendMsgFromInputEditor(EChatType type)
                             if( viewer_maturity == LLVersionInfo::FSViewerMaturity::UNOFFICIAL_VIEWER )
                             {
                                 str_version_tag = "Unofficial";
+                            }
+                            if( viewer_maturity == LLVersionInfo::FSViewerMaturity::STREAMING_VIEWER )
+                            {
+                                str_version_tag = "Streaming";
                             }
                             else if( viewer_maturity != LLVersionInfo::FSViewerMaturity::RELEASE_VIEWER )
                             {
@@ -639,6 +657,10 @@ FSFloaterIM::~FSFloaterIM()
     {
         mRecentEmojisUpdatedCallbackConnection.disconnect();
     }
+
+    mEmojiCloseConn.disconnect();
+
+    LLFloaterChatMentionPicker::removeParticipantSource(this);
 }
 
 void FSFloaterIM::onVoiceChannelStateChanged(const LLVoiceChannel::EState& old_state, const LLVoiceChannel::EState& new_state)
@@ -988,6 +1010,9 @@ bool FSFloaterIM::postBuild()
     mInputEditor->setFont(LLViewerChat::getChatFont());
     mInputEditor->enableSingleLineMode(gSavedSettings.getBOOL("FSUseSingleLineChatEntry"));
     mInputEditor->setCommitCallback(boost::bind(&FSFloaterIM::sendMsgFromInputEditor, this, CHAT_TYPE_NORMAL));
+    // <FS:TJ> [FIRE-35804] Allow the IM floater to have separate transparency
+    mInputEditor->setTransparencyOverrideCallback(boost::bind(&FSFloaterIM::onGetChatEditorOpacityCallback, this, _1, _2));
+    // </FS:TJ>
 
     mEmojiRecentPanelToggleBtn = getChild<LLButton>("emoji_recent_panel_toggle_btn");
     mEmojiRecentPanelToggleBtn->setClickedCallback([this](LLUICtrl*, const LLSD&) { onEmojiRecentPanelToggleBtnClicked(); });
@@ -1003,8 +1028,8 @@ bool FSFloaterIM::postBuild()
     mEmojiRecentIconsCtrl->setCommitCallback([this](LLUICtrl*, const LLSD& value) { onRecentEmojiPicked(value); });
     mEmojiRecentIconsCtrl->setVisible(false);
 
-    static bool usePrettyEmojiButton = gSavedSettings.getBOOL( "FSUsePrettyEmojiButton" );
-    static bool useBWEmojis = gSavedSettings.getBOOL( "FSUseBWEmojis" );
+    static bool usePrettyEmojiButton = gSavedSettings.getBOOL("FSUsePrettyEmojiButton");
+    static bool useBWEmojis = gSavedSettings.getBOOL("FSUseBWEmojis");
     mEmojiPickerToggleBtn = getChild<LLButton>("emoji_picker_toggle_btn");
     if (usePrettyEmojiButton)
     {
@@ -1019,14 +1044,16 @@ bool FSFloaterIM::postBuild()
         mEmojiPickerToggleBtn->setImageOverlay("Emoji_Picker_Icon");
     }
     mEmojiPickerToggleBtn->setClickedCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerToggleBtnClicked(); });
+    mEmojiPickerToggleBtn->setMouseDownCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerToggleBtnDown(); });
+    mEmojiCloseConn = LLEmojiHelper::instance().setCloseCallback([this](LLUICtrl*, const LLSD&) { onEmojiPickerClosed(); });
 
     mRecentEmojisUpdatedCallbackConnection = LLFloaterEmojiPicker::setRecentEmojisUpdatedCallback([this](const std::list<llwchar>& recent_emojis_list) { initEmojiRecentPanel(); });
 
     getChild<LLButton>("send_chat")->setCommitCallback(boost::bind(&FSFloaterIM::sendMsgFromInputEditor, this, CHAT_TYPE_NORMAL));
     getChild<LLButton>("chat_search_btn")->setCommitCallback(boost::bind(&FSFloaterIM::onChatSearchButtonClicked, this));
 
-    bool isFSSupportGroup = FSData::getInstance()->isFirestormGroup(mSessionID);
-    bool isFSTestingGroup = FSData::getInstance()->isTestingGroup(mSessionID);
+    const bool isFSSupportGroup = FSData::getInstance()->isFirestormGroup(mSessionID);
+    const bool isFSTestingGroup = FSData::getInstance()->isTestingGroup(mSessionID);
 
     //We can show the testing group button simply by checking testing group
     childSetVisible("testing_panel", isFSTestingGroup);
@@ -1244,6 +1271,22 @@ FSFloaterIM* FSFloaterIM::show(const LLUUID& session_id)
 
     if (!gIMMgr->hasSession(session_id))
         return nullptr;
+
+    // <AS:chanayane> [FIRE-34494] fixes unable to open an IM with someone who started a group chat
+    // Prevent showing non-IM sessions in FSFloaterIM::show()
+    LLIMModel::LLIMSession* session = LLIMModel::getInstance()->findIMSession(session_id);
+    if (!session || ( 
+           IM_NOTHING_SPECIAL          != session->mType
+        && IM_SESSION_P2P_INVITE       != session->mType
+        && IM_SESSION_INVITE           != session->mType
+        && IM_SESSION_CONFERENCE_START != session->mType
+        && IM_SESSION_GROUP_START      != session->mType))
+    {
+        LL_WARNS("IMVIEW") << "Attempted to show FSFloaterIM for non-IM session: "
+                        << (session ? std::to_string(session->mType) : "null") << LL_ENDL;
+        return nullptr;
+    }
+    // </AS:chanayane>
 
     if (!isChatMultiTab())
     {
@@ -1600,7 +1643,8 @@ void FSFloaterIM::updateMessages()
                 chat.mText = message;
             }
 
-            mChatHistory->appendMessage(chat, chat_args);
+            static const LLStyle::Params input_append_params = LLStyle::Params();
+            mChatHistory->appendMessage(chat, chat_args, input_append_params);
             mLastMessageIndex = msg["index"].asInteger();
 
             // if it is a notification - next message is a notification history log, so skip it
@@ -2522,6 +2566,7 @@ void FSFloaterIM::onEmojiRecentPanelToggleBtnClicked()
     }
 
     mEmojiRecentPanel->setVisible(show);
+    mEmojiRecentPanelToggleBtn->setImageOverlay(show ? "Arrow_Up" : "Arrow_Down");
     mInputEditor->setFocus(true);
 }
 
@@ -2562,6 +2607,64 @@ void FSFloaterIM::onRecentEmojiPicked(const LLSD& value)
 
 void FSFloaterIM::onEmojiPickerToggleBtnClicked()
 {
-    mInputEditor->setFocus(true);
-    mInputEditor->showEmojiHelper();
+    if (!mEmojiPickerToggleBtn->getToggleState())
+    {
+        mInputEditor->hideEmojiHelper();
+        mInputEditor->setFocus(true);
+        mInputEditor->showEmojiHelper();
+        mEmojiPickerToggleBtn->setToggleState(true); // in case hideEmojiHelper closed a visible instance
+    }
+    else
+    {
+        mInputEditor->hideEmojiHelper();
+        mEmojiPickerToggleBtn->setToggleState(false);
+    }
 }
+
+void FSFloaterIM::onEmojiPickerToggleBtnDown()
+{
+    if (mEmojiHelperLastCallbackFrame == LLFrameTimer::getFrameCount())
+    {
+        // Helper gets closed by focus lost event on Down before before onEmojiPickerShowBtnDown
+        // triggers.
+        // If this condition is true, user pressed button and it was 'toggled' during press,
+        // restore 'toggled' state so that button will not reopen helper.
+        mEmojiPickerToggleBtn->setToggleState(true);
+    }
+}
+
+void FSFloaterIM::onEmojiPickerClosed()
+{
+    if (mEmojiPickerToggleBtn->getToggleState())
+    {
+        mEmojiPickerToggleBtn->setToggleState(false);
+        // Helper gets closed by focus lost event on Down before onEmojiPickerShowBtnDown
+        // triggers. If mEmojiHelperLastCallbackFrame is set and matches Down, means close
+        // was triggered by user's press.
+        // A bit hacky, but I can't think of a better way to handle this without rewriting helper.
+        mEmojiHelperLastCallbackFrame = LLFrameTimer::getFrameCount();
+    }
+}
+
+uuid_vec_t FSFloaterIM::getSessionParticipants() const
+{
+    if (!mControlPanel)
+        return{};
+
+    return mControlPanel->getParticipants();
+}
+
+// <FS:TJ> [FIRE-35804] Allow the IM floater to have separate transparency
+// This is specifically for making the text editors such as chat_editor always active opacity when the IM floater is focused
+// Otherwise if they aren't active, it will use either the IM opacity, or inactive opacity, whatever is smaller
+F32 FSFloaterIM::onGetChatEditorOpacityCallback(ETypeTransparency type, F32 alpha)
+{
+    static LLCachedControl<F32> im_opacity(gSavedSettings, "FSIMOpacity", 1.0f);
+    if (type != TT_ACTIVE)
+    {
+        return llmin(im_opacity, alpha);
+    }
+
+    return alpha;
+}
+// </FS:TJ>

@@ -1,5 +1,5 @@
 /**
- * @file fsfloaterposer.cpp
+ * @file fsfloaterposer.h
  * @brief View Model for posing your (and other) avatar(s).
  *
  * $LicenseInfo:firstyear=2024&license=viewerlgpl$
@@ -29,6 +29,7 @@
 #define FS_FLOATER_POSER_H
 
 #include "llfloater.h"
+#include "lltoolmgr.h"
 #include "fsposeranimator.h"
 
 class FSVirtualTrackpad;
@@ -73,16 +74,25 @@ typedef enum E_Columns
 /// A class containing the UI fiddling for the Poser Floater.
 /// Please don't do LLJoint stuff here, fsposingmotion (the LLMotion derivative) is the class for that.
 /// </summary>
-class FSFloaterPoser : public LLFloater
+class FSFloaterPoser : public LLFloater, public LLEditMenuHandler
 {
     friend class LLFloaterReg;
     FSFloaterPoser(const LLSD &key);
-
+public:
+    void updatePosedBones(const std::string& jointName);
+    void selectJointByName(const std::string& jointName);
+    void undo() override { onUndoLastChange(); };
+    bool canUndo() const override { return true; }
+    void redo() override { onRedoLastChange(); };
+    bool canRedo() const override { return true; }
  private:
+    // Helper function to encapsualte save logic
+    void doPoseSave(LLVOAvatar* avatar, const std::string& filename);
     bool postBuild() override;
     void onOpen(const LLSD& key) override;
     void onClose(bool app_quitting) override;
-
+    void onFocusReceived() override;
+    void onFocusLost() override;
     /// <summary>
     /// Refreshes the supplied pose list from the supplued subdirectory.
     /// </summary>
@@ -123,6 +133,12 @@ class FSFloaterPoser : public LLFloater
     /// </summary>
     /// <returns>The selected joints</returns>
     std::vector<FSPoserAnimator::FSPoserJoint*> getUiSelectedPoserJoints() const;
+
+    /// <summary>
+    /// Updates the visual with the first selected joint from the supplied collection, if any.
+    /// </summary>
+    /// <param name="joints">The collection of selected joints.</param>
+    void updateManipWithFirstSelectedJoint(std::vector<FSPoserAnimator::FSPoserJoint*> joints) const;
 
     /// <summary>
     /// Gets a detectable avatar by its UUID.
@@ -176,7 +192,7 @@ class FSFloaterPoser : public LLFloater
     /// <param name="toFind">The avatar UUID to find on the avatars scroll list.</param>
     /// <returns>The scroll-list index for the supplied avatar, if found, otherwise -1.</returns>
     S32 getAvatarListIndexForUuid(const LLUUID& toFind) const;
-
+    
     /// <summary>
     /// There are several control-callbacks manipulating rotations etc, they all devolve to these.
     /// In these are the appeals to the posing business layer.
@@ -185,11 +201,10 @@ class FSFloaterPoser : public LLFloater
     /// Using a set, then a get does not guarantee the value you just set.
     /// There may be +/- PI difference two axes, because harmonics.
     /// Thus keep your UI synced with less gets.
-    /// </remarks>
+    /// </remarks>    
     void setSelectedJointsRotation(const LLVector3& absoluteRot, const LLVector3& deltaRot);
     void setSelectedJointsPosition(F32 x, F32 y, F32 z);
     void setSelectedJointsScale(F32 x, F32 y, F32 z);
-
     /// <summary>
     /// Yeilds the rotation of the first selected joint (one may multi-select).
     /// </summary>
@@ -202,10 +217,12 @@ class FSFloaterPoser : public LLFloater
     LLVector3 getPositionOfFirstSelectedJoint() const;
     LLVector3 getScaleOfFirstSelectedJoint() const;
 
+    LLScrollListCtrl* getScrollListForTab(LLPanel * tabPanel) const;
     // Pose load/save
     void createUserPoseDirectoryIfNeeded();
     void onToggleLoadSavePanel();
     void onClickPoseSave();
+    void onMouseLeaveSavePoseBtn();
     void onPoseFileSelect();
     bool savePoseToXml(LLVOAvatar* avatar, const std::string& posePath);
     bool savePoseToBvh(LLVOAvatar* avatar, const std::string& posePath);
@@ -215,53 +232,50 @@ class FSFloaterPoser : public LLFloater
     bool poseFileStartsFromTeePose(const std::string& poseFileName);
     void setPoseSaveFileTextBoxToUiSelectedAvatarSaveFileName();
     void setUiSelectedAvatarSaveFileName(const std::string& saveFileName);
+    bool confirmFileOverwrite(std::string fileName);
+    void startPosingSelf();
+    void stopPosingAllAvatars();
+    // visual manipulators control
+    void enableVisualManipulators();
+    void disableVisualManipulators();
 
-    // UI Event Handlers:
+    // UI Event Handlers
     void onAvatarsRefresh();
     void onAvatarSelect();
     void onJointTabSelect();
-    void onToggleAdvancedPanel();
     void onToggleMirrorChange();
     void onToggleSympatheticChange();
+    void onToggleVisualManipulators();
     void setRotationChangeButtons(bool mirror, bool sympathetic);
-    void onUndoLastRotation();
-    void onRedoLastRotation();
-    void onUndoLastPosition();
-    void onRedoLastPosition();
-    void onUndoLastScale();
-    void onRedoLastScale();
-    void onResetPosition();
-    void onResetScale();
+    void onUndoLastChange();
+    void onRedoLastChange();
+    void onResetJoint(const LLSD data);
     void onSetAvatarToTpose();
-    void enableOrDisableRedoButton();
     void onPoseStartStop();
-    void startPosingSelf();
-    void stopPosingAllAvatars();
-    void onLimbTrackballChanged();
-    void onYawPitchRollSliderChanged();
-    void onAvatarPositionSet();
-    void onAdvancedPositionSet();
-    void onAdvancedScaleSet();
+    void onTrackballChanged();
+    void onYawPitchRollChanged(bool skipUpdateTrackpad = false);
+    void onPositionSet();
+    void onScaleSet();
     void onClickToggleSelectedBoneEnabled();
     void onClickRecaptureSelectedBones();
     void onClickFlipPose();
     void onClickFlipSelectedJoints();
-    void onPoseJointsReset();
-    void onOpenSetAdvancedPanel();
     void onAdjustTrackpadSensitivity();
     void onClickLoadLeftHandPose();
     void onClickLoadRightHandPose();
     void onClickLoadHandPose(bool isRightHand);
-    void onClickSetBaseRotZero();
-    //void onCommitSpinner(LLUICtrl* spinner);
-    void onCommitSpinner(LLUICtrl* spinner, S32 ID);
+    void onClickSavingToBvh();
+    void onCommitSpinner(const LLUICtrl* spinner, const S32 ID);
+    void onCommitSlider(const LLUICtrl* slider, const S32 id);
+    void onClickSymmetrize(const S32 ID);
+    void onClickLockWorldRotBtn();
 
     // UI Refreshments
     void refreshRotationSlidersAndSpinners();
-    void refreshAvatarPositionSlidersAndSpinners();
+    void refreshPositionSlidersAndSpinners();
+    void refreshScaleSlidersAndSpinners();
     void refreshTrackpadCursor();
-    void refreshAdvancedPositionSlidersAndSpinners();
-    void refreshAdvancedScaleSlidersAndSpinners();
+    void enableOrDisableRedoAndUndoButton();
 
     /// <summary>
     /// Determines if we have permission to animate the supplied avatar.
@@ -338,18 +352,19 @@ class FSFloaterPoser : public LLFloater
     void addBoldToScrollList(LLScrollListCtrl* list, LLVOAvatar* avatar);
 
     /// <summary>
-    /// Determines if the user has run this method twice within mDoubleClickInterval.
+    /// Gets a string for a joint on a scroll-list.
     /// </summary>
-    /// <returns>true if this method has executed since mDoubleClickInterval seconds ago, otherwise false.</returns>
-    bool notDoubleClicked();
+    /// <param name="avatar">The avatar owning the supplied joint.</param>
+    /// <param name="joint">The joint to query.</param>
+    /// <returns>A string naming an icon to present with the joint.</returns>
+    std::string getScrollListIconForJoint(LLVOAvatar* avatar, FSPoserAnimator::FSPoserJoint joint);
 
     /// <summary>
-    /// Gets whether the user wishes to reset the base-rotation to zero when they start editing a joint.
+    /// Tries to get the named string from the XUI.
     /// </summary>
-    /// <remarks>
-    /// If a joint has a base-rotation of zero, the rotation then appears to be the user's work and qualifies to save to a re-importable format.
-    /// </remarks>
-    bool getWhetherToResetBaseRotationOnEdit();
+    /// <param name="name">The name of the string.</param>
+    /// <returns>The named string, if it exists, otherwise an empty string.</returns>
+    std::string tryGetString(std::string name);
 
     /// <summary>
     /// Gets the name of an item from the supplied object ID.
@@ -419,40 +434,33 @@ class FSFloaterPoser : public LLFloater
     /// <summary>
     /// Transforms the supplied vector into a string of three numbers, format suiting to writing into a BVH file.
     /// </summary>
-    std::string static vec3ToXYZString(const LLVector3& val);
+    std::string static positionToString(const LLVector3& val);
 
     /// <summary>
-    /// The time when the last click of a button was made.
-    /// Utilized for controls needing a 'double click do' function.
+    /// Performs an angle module of the supplied value to between -180 & 180 (degrees).
     /// </summary>
-    std::chrono::system_clock::time_point mTimeLastExecutedDoubleClickMethod = std::chrono::system_clock::now();
-
-    /// <summary>
-    /// The constant time interval, in seconds, a user must execute the notDoubleClicked twice to successfully 'double-click' a button.
-    /// </summary>
-    std::chrono::duration<double> const mDoubleClickInterval = std::chrono::duration<double>(0.3);
-
-    /// <summary>
-    /// Unwraps a normalized value from the trackball to a slider value.
-    /// </summary>
-    /// <param name="scale">The scale value from the trackball.</param>
-    /// <returns>A value appropriate for fitting a slider.</returns>
+    /// <param name="value">The value to modulo.</param>
+    /// <returns>The modulo value.</returns>
     /// <remarks>
-    /// If the trackpad is in 'infinite scroll' mode, it can produce normalized-values outside the range of the sliders.
-    /// This method ensures whatever value the trackpad produces, they work with the sliders.
+    /// If the trackpad is in 'infinite scroll' mode, it can produce normalized-values outside the range of the spinners.
+    /// This method ensures whatever value the trackpad produces, they work with the spinners.
     /// </remarks>
-    static F32 unWrapScale(F32 scale);
+    static F32 clipRange(F32 value);
 
+    LLToolset*  mLastToolset{ nullptr };
+    LLTool*     mJointRotTool{ nullptr };
+    
     LLVector3          mLastSliderRotation;
+
     FSVirtualTrackpad* mAvatarTrackball{ nullptr };
 
     LLSliderCtrl* mTrackpadSensitivitySlider{ nullptr };
-    LLSliderCtrl* mLimbYawSlider{ nullptr };
-    LLSliderCtrl* mLimbPitchSlider{ nullptr }; // pointing your nose up or down
-    LLSliderCtrl* mLimbRollSlider{ nullptr }; // your ear touches your shoulder
     LLSliderCtrl* mPosXSlider{ nullptr };
     LLSliderCtrl* mPosYSlider{ nullptr };
     LLSliderCtrl* mPosZSlider{ nullptr };
+    LLSliderCtrl* mAdvRotXSlider{ nullptr };
+    LLSliderCtrl* mAdvRotYSlider{ nullptr };
+    LLSliderCtrl* mAdvRotZSlider{ nullptr };
     LLSliderCtrl* mAdvPosXSlider{ nullptr };
     LLSliderCtrl* mAdvPosYSlider{ nullptr };
     LLSliderCtrl* mAdvPosZSlider{ nullptr };
@@ -473,7 +481,7 @@ class FSFloaterPoser : public LLFloater
     LLScrollListCtrl* mPosesScrollList{ nullptr };
     LLScrollListCtrl* mHandPresetsScrollList{ nullptr };
 
-    LLButton* mToggleAdvancedPanelBtn{ nullptr };
+    LLButton* mToggleVisualManipulators{ nullptr };
     LLButton* mStartStopPosingBtn{ nullptr };
     LLButton* mToggleLoadSavePanelBtn{ nullptr };
     LLButton* mBrowserFolderBtn{ nullptr };
@@ -483,15 +491,17 @@ class FSFloaterPoser : public LLFloater
     LLButton* mFlipJointBtn{ nullptr };
     LLButton* mRecaptureBtn{ nullptr };
     LLButton* mTogglePosingBonesBtn{ nullptr };
+    LLButton* mToggleLockWorldRotBtn{ nullptr };
     LLButton* mToggleMirrorRotationBtn{ nullptr };
     LLButton* mToggleSympatheticRotationBtn{ nullptr };
     LLButton* mToggleDeltaModeBtn{ nullptr };
     LLButton* mRedoChangeBtn{ nullptr };
+    LLButton* mUndoChangeBtn{ nullptr };
     LLButton* mSetToTposeButton{ nullptr };
+    LLButton* mBtnJointRotate{ nullptr };
 
     LLLineEditor* mPoseSaveNameEditor{ nullptr };
 
-    LLPanel* mAdvancedParentPnl{ nullptr };
     LLPanel* mJointsParentPnl{ nullptr };
     LLPanel* mTrackballPnl{ nullptr };
     LLPanel* mPositionRotationPnl{ nullptr };
@@ -502,8 +512,8 @@ class FSFloaterPoser : public LLFloater
     LLPanel* mCollisionVolumesPnl{ nullptr };
     LLPanel* mPosesLoadSavePnl{ nullptr };
 
-    LLCheckBoxCtrl* mResetBaseRotCbx{ nullptr };
     LLCheckBoxCtrl* mAlsoSaveBvhCbx{ nullptr };
+    LLCheckBoxCtrl* mUnlockPelvisInBvhSaveCbx{ nullptr };
 
     LLUICtrl* mTrackpadSensitivitySpnr{ nullptr };
     LLUICtrl* mYawSpnr{ nullptr };

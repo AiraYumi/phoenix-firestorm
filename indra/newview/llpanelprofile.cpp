@@ -333,8 +333,8 @@ public:
 
         const std::string verb = params[1].asString();
         // <FS:Ansariel> FIRE-9045: Inspect links always open full profile
-        //if (verb == "about")
-        if (verb == "about" || (gSavedSettings.getBOOL("FSInspectAvatarSlurlOpensProfile") && verb == "inspect"))
+        //if (verb == "about" || verb == "mention")
+        if (verb == "about" || verb == "mention" || (gSavedSettings.getBOOL("FSInspectAvatarSlurlOpensProfile") && verb == "inspect"))
         // </FS:Ansariel>
         {
             LLAvatarActions::showProfile(avatar_id);
@@ -2859,6 +2859,7 @@ void LLPanelProfileFirstLife::onChangePhoto()
                 }
             });
             texture_floaterp->setLocalTextureEnabled(false);
+            texture_floaterp->setBakeTextureEnabled(false);
             texture_floaterp->setCanApply(false, true, false);
 
             parent_floater->addDependentFloater(mFloaterTexturePickerHandle);
@@ -3147,10 +3148,10 @@ void LLPanelProfileNotes::updateData()
 #ifdef OPENSIM
     if (LLGridManager::instance().isInOpenSim() && gAgent.getRegionCapability(PROFILE_PROPERTIES_CAP).empty())
     {
-    LLUUID avatar_id = getAvatarId();
-        if (!getStarted() && avatar_id.notNull() && gAgent.getRegionCapability(PROFILE_PROPERTIES_CAP).empty() && !getSelfProfile())
-    {
-        setIsLoading();
+        LLUUID avatar_id = getAvatarId();
+        if (!getStarted() && avatar_id.notNull())
+        {
+            setIsLoading();
             LLAvatarPropertiesProcessor::getInstance()->sendAvatarNotesRequest(avatar_id);
         }
     }

@@ -36,6 +36,7 @@
 #include "lltooldraganddrop.h"
 #include "lltransientdockablefloater.h"
 #include "llvoicechannel.h"
+#include "fschatparticipants.h"
 
 class FSChatHistory;
 class FSFloaterIMTimer;
@@ -57,7 +58,7 @@ typedef boost::signals2::signal<void(const LLUUID& session_id)> floater_showed_s
  * Individual IM window that appears at the bottom of the screen,
  * optionally "docked" to the bottom tray.
  */
-class FSFloaterIM : public LLTransientDockableFloater, LLVoiceClientStatusObserver, LLFriendObserver, LLEventTimer
+class FSFloaterIM : public LLTransientDockableFloater, LLVoiceClientStatusObserver, LLFriendObserver, LLEventTimer, FSChatParticipants
 {
     LOG_CLASS(FSFloaterIM);
 public:
@@ -161,7 +162,11 @@ public:
 
     void timedUpdate();
 
-    void onEmojiPickerToggleBtnClicked();
+    uuid_vec_t getSessionParticipants() const;
+
+    // <FS:TJ> [FIRE-35804] Allow the IM floater to have separate transparency
+    F32 onGetChatEditorOpacityCallback(ETypeTransparency type, F32 alpha);
+    // </FS:TJ>
 
 protected:
     /* virtual */
@@ -241,7 +246,10 @@ private:
     bool onChatOptionsVisibleContextMenuItem(const LLSD& userdata);
     bool onChatOptionsEnableContextMenuItem(const LLSD& userdata);
 
+    void onEmojiPickerToggleBtnClicked();
+    void onEmojiPickerToggleBtnDown();
     void onEmojiRecentPanelToggleBtnClicked();
+    void onEmojiPickerClosed();
     void initEmojiRecentPanel();
     void onRecentEmojiPicked(const LLSD& value);
 
@@ -296,6 +304,8 @@ private:
     FSFloaterIMTimer*   mIMFloaterTimer;
 
     boost::signals2::connection mRecentEmojisUpdatedCallbackConnection{};
+    boost::signals2::connection mEmojiCloseConn{};
+    U32 mEmojiHelperLastCallbackFrame{ 0 };
 };
 
 class FSFloaterIMTimer : public LLEventTimer

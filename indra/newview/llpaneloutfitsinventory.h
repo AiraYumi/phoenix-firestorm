@@ -30,11 +30,13 @@
 
 #include "llpanel.h"
 
+class LLButton;
 class LLOutfitGallery;
 class LLOutfitsList;
 class LLOutfitListGearMenuBase;
 class LLPanelAppearanceTab;
 class LLPanelWearing;
+class LLMenuButton;
 class LLMenuGL;
 class LLSidepanelAppearance;
 class LLTabContainer;
@@ -49,6 +51,8 @@ public:
 
     /*virtual*/ bool postBuild();
     /*virtual*/ void onOpen(const LLSD& key);
+
+    void draw(); // <FS:Ansariel> FIRE-17626: Attachment count in appearance floater
 
     void onSearchEdit(const std::string& string);
     void onSave();
@@ -70,6 +74,13 @@ public:
 
     bool isCOFPanelActive() const;
 
+    void setMenuButtons(
+        LLMenuButton* gear_menu,
+        LLMenuButton* sort_menu,
+        LLButton* trash_btn,
+        LLPanel* sort_menu_panel,
+        LLPanel* trash_menu_panel);
+
     // <FS:Ansariel> Show avatar complexity in appearance floater
     void updateAvatarComplexity(U32 complexity, const std::map<LLUUID, U32>& item_complexity, const std::map<LLUUID, U32>& temp_item_complexity, U32 body_parts_complexity);
 
@@ -82,6 +93,10 @@ private:
     // <FS:Ansariel> FIRE-17626: Attachment count in appearance floater
     LLInventoryCategoriesObserver* mCategoriesObserver;
     void onCOFChanged();
+
+    U32 mCurrentTempAttachmentCount{ 0 };
+
+    LLFrameTimer mTempAttachmentUpdateTimer;
     // </FS:Ansariel>
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -107,20 +122,29 @@ protected:
     void initListCommandsHandlers();
     void updateListCommands();
     void onWearButtonClick();
-    void showGearMenu();
     void onTrashButtonClick();
+    void onGearMouseDown();
     bool isActionEnabled(const LLSD& userdata);
     void setWearablesLoading(bool val);
     void onWearablesLoaded();
     void onWearablesLoading();
 private:
     LLPanel*                    mListCommands;
-    LLMenuGL*                   mMenuAdd;
     LLButton*                   mWearBtn = nullptr;
     // List Commands                                                                //
     //////////////////////////////////////////////////////////////////////////////////
 
     bool mInitialized;
+
+    // not owned items
+    LLMenuButton* mGearMenu;
+    LLMenuButton* mSortMenu;
+    LLButton* mTrashBtn;
+    LLPanel* mSortMenuPanel;
+    LLPanel* mTrashMenuPanel;
+    boost::signals2::connection mGearMenuConnection;
+    boost::signals2::connection mSortMenuConnection;
+    boost::signals2::connection mTrashMenuConnection;
 };
 
 #endif //LL_LLPANELOUTFITSINVENTORY_H

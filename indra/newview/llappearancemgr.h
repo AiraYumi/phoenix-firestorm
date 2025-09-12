@@ -65,6 +65,7 @@ public:
     void wearInventoryCategoryOnAvatar(LLInventoryCategory* category, bool append);
     void wearCategoryFinal(const LLUUID& cat_id, bool copy_items, bool append);
     void wearOutfitByName(const std::string& name);
+    bool wearOutfit(const LLSD& query_map, bool append = false);
     void changeOutfit(bool proceed, const LLUUID& category, bool append);
     void replaceCurrentOutfit(const LLUUID& new_outfit);
     void renameOutfit(const LLUUID& outfit_id);
@@ -107,7 +108,7 @@ public:
     bool getCanReplaceCOF(const LLUUID& outfit_cat_id);
 
     // Can we add all referenced items to the avatar?
-    bool canAddWearables(const uuid_vec_t& item_ids) const;
+    bool canAddWearables(const uuid_vec_t& item_ids, bool warn_on_type_mismatch = true) const;
 
     // Copy all items in a category.
     void shallowCopyCategoryContents(const LLUUID& src_id, const LLUUID& dst_id,
@@ -155,6 +156,9 @@ public:
     // Attachment link management
     void unregisterAttachment(const LLUUID& item_id);
     void registerAttachment(const LLUUID& item_id);
+// [SL:KB] - Appearance-Fixes
+    bool getAttachmentInvLinkEnable() const { return mAttachmentInvLinkEnabled; }
+// [/SL:KB]
     void setAttachmentInvLinkEnable(bool val);
 
     // Add COF link to individual item.
